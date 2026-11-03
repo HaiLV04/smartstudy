@@ -150,7 +150,7 @@ const SA = (() => {
 
 
 /* ============================================================
-   Tự động gắn thanh "Nạp nhanh bộ đề Lớp 1" vào ô soạn câu hỏi
+   Tự động gắn thanh "Nạp nhanh bộ đề Lớp 1 (Kết Nối Tri Thức)" vào ô soạn câu hỏi
    ============================================================ */
 document.addEventListener("DOMContentLoaded", function() {
   function initGrade1Selector() {
@@ -160,46 +160,144 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var wrap = document.createElement("div");
     wrap.className = "grade1-quick-select";
-    wrap.style.cssText = "margin-bottom:10px; padding:10px 14px; background:#eff6ff; border:1.5px solid #93c5fd; border-radius:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; box-shadow:0 2px 4px rgba(37,99,235,0.06);";
+    wrap.style.cssText = "margin-bottom:12px; padding:12px 14px; background:#eff6ff; border:1.5px solid #38bdf8; border-radius:12px; display:flex; flex-direction:column; gap:8px; box-shadow:0 3px 6px rgba(14,165,233,0.08);";
+
+    // Top row with label & filter buttons
+    var topRow = document.createElement("div");
+    topRow.style.cssText = "display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;";
 
     var label = document.createElement("span");
-    label.style.cssText = "font-size:0.85rem; font-weight:800; color:#1e40af; display:flex; align-items:center; gap:6px;";
-    label.innerHTML = "⚡ Nạp nhanh đề Lớp 1:";
+    label.style.cssText = "font-size:0.88rem; font-weight:800; color:#0369a1; display:flex; align-items:center; gap:6px;";
+    label.innerHTML = "⚡ Nạp đề Lớp 1 theo tuần (Sách Kết Nối Tri Thức):";
 
+    var filterWrap = document.createElement("div");
+    filterWrap.style.cssText = "display:flex; gap:6px;";
+    filterWrap.innerHTML = 
+      '<button type="button" class="kntt-f-btn active" data-sub="all" style="padding:4px 10px; font-size:0.78rem; font-weight:700; border-radius:6px; border:1px solid #0284c7; background:#0284c7; color:#fff; cursor:pointer;">Tất cả</button>' +
+      '<button type="button" class="kntt-f-btn" data-sub="toan" style="padding:4px 10px; font-size:0.78rem; font-weight:700; border-radius:6px; border:1px solid #94a3b8; background:#fff; color:#334155; cursor:pointer;">📘 Toán (35 tuần)</button>' +
+      '<button type="button" class="kntt-f-btn" data-sub="tv" style="padding:4px 10px; font-size:0.78rem; font-weight:700; border-radius:6px; border:1px solid #94a3b8; background:#fff; color:#334155; cursor:pointer;">📕 Tiếng Việt (35 tuần)</button>';
+
+    topRow.appendChild(label);
+    topRow.appendChild(filterWrap);
+
+    // Dropdown select
     var select = document.createElement("select");
-    select.style.cssText = "flex:1; min-width:240px; padding:8px 12px; font-size:0.85rem; border-radius:8px; border:1px solid #93c5fd; background:#fff; font-weight:700; color:#0f172a; cursor:pointer;";
-    
-    var optionsHtml = '<option value="">-- Chọn chuyên đề Lớp 1 chuẩn có sẵn --</option>';
-    if (window.GRADE1_QUESTIONS && Array.isArray(window.GRADE1_QUESTIONS)) {
-      window.GRADE1_QUESTIONS.forEach(function(t) {
-        optionsHtml += '<option value="' + t.id + '">' + t.icon + ' [' + t.subject + ' 1] ' + t.title + ' (' + t.questions.length + ' câu)</option>';
-      });
-    }
-    select.innerHTML = optionsHtml;
+    select.style.cssText = "width:100%; padding:9px 12px; font-size:0.88rem; border-radius:8px; border:1.5px solid #0284c7; background:#fff; font-weight:700; color:#0f172a; cursor:pointer;";
 
+    function renderSelectOptions(filterSub) {
+      var html = '<option value="">-- Bấm vào đây để chọn Tuần học bạn muốn cho cả lớp chơi --</option>';
+      var kntt = window.GRADE1_KNTT || {};
+
+      if (filterSub === 'all' || filterSub === 'toan') {
+        if (kntt.toan) {
+          html += '<optgroup label="📘 TOÁN 1 — KẾT NỐI TRI THỨC (HỌC KÌ 1: TUẦN 1 - 18)">';
+          kntt.toan.filter(function(t) { return t.semester === 1; }).forEach(function(t) {
+            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
+          });
+          html += '</optgroup>';
+
+          html += '<optgroup label="📘 TOÁN 1 — KẾT NỐI TRI THỨC (HỌC KÌ 2: TUẦN 19 - 35)">';
+          kntt.toan.filter(function(t) { return t.semester === 2; }).forEach(function(t) {
+            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
+          });
+          html += '</optgroup>';
+        }
+      }
+
+      if (filterSub === 'all' || filterSub === 'tv') {
+        if (kntt.tiengViet) {
+          html += '<optgroup label="📕 TIẾNG VIỆT 1 — KẾT NỐI TRI THỨC (HỌC KÌ 1: TUẦN 1 - 18)">';
+          kntt.tiengViet.filter(function(t) { return t.semester === 1; }).forEach(function(t) {
+            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
+          });
+          html += '</optgroup>';
+
+          html += '<optgroup label="📕 TIẾNG VIỆT 1 — KẾT NỐI TRI THỨC (HỌC KÌ 2: TUẦN 19 - 35)">';
+          kntt.tiengViet.filter(function(t) { return t.semester === 2; }).forEach(function(t) {
+            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
+          });
+          html += '</optgroup>';
+        }
+      }
+
+      // Add general thematic topics if all
+      if (filterSub === 'all' && window.GRADE1_QUESTIONS && Array.isArray(window.GRADE1_QUESTIONS)) {
+        html += '<optgroup label="🌟 CHUYÊN ĐỀ TỔNG HỢP (KHO CÂU HỎI MỞ RỘNG)">';
+        window.GRADE1_QUESTIONS.forEach(function(t) {
+          html += '<option value="' + t.id + '">' + t.icon + ' [' + t.subject + ' 1] ' + t.title + ' (' + t.questions.length + ' câu)</option>';
+        });
+        html += '</optgroup>';
+      }
+
+      select.innerHTML = html;
+    }
+
+    renderSelectOptions('all');
+
+    // Filter button clicks
+    filterWrap.querySelectorAll('.kntt-f-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        filterWrap.querySelectorAll('.kntt-f-btn').forEach(function(b) {
+          b.style.background = '#fff';
+          b.style.color = '#334155';
+          b.style.borderColor = '#94a3b8';
+        });
+        btn.style.background = '#0284c7';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#0284c7';
+        renderSelectOptions(btn.dataset.sub);
+      });
+    });
+
+    // Select change
     select.addEventListener("change", function() {
       var selectedId = select.value;
-      if (!selectedId || !window.GRADE1_QUESTIONS) return;
-      var topic = window.GRADE1_QUESTIONS.find(function(t) { return t.id === selectedId; });
-      if (topic) {
-        quizInput.value = topic.questions.join("\n");
+      if (!selectedId) return;
+
+      var foundTopic = null;
+      var kntt = window.GRADE1_KNTT || {};
+
+      if (kntt.toan) {
+        foundTopic = kntt.toan.find(function(t) { return t.id === selectedId; });
+      }
+      if (!foundTopic && kntt.tiengViet) {
+        foundTopic = kntt.tiengViet.find(function(t) { return t.id === selectedId; });
+      }
+      if (!foundTopic && window.GRADE1_QUESTIONS) {
+        foundTopic = window.GRADE1_QUESTIONS.find(function(t) { return t.id === selectedId; });
+      }
+
+      if (foundTopic) {
+        quizInput.value = foundTopic.questions.join("\n");
         if (window.SA && SA.toast) {
-          SA.toast("Đã nạp " + topic.questions.length + " câu " + topic.title + "!");
+          SA.toast("Đã nạp " + foundTopic.questions.length + " câu " + foundTopic.title + "!");
         }
       }
     });
 
-    wrap.appendChild(label);
+    wrap.appendChild(topRow);
     wrap.appendChild(select);
     quizInput.parentNode.insertBefore(wrap, quizInput);
   }
 
-  if (!window.GRADE1_QUESTIONS) {
-    var script = document.createElement("script");
+  // Ensure both grade1-kntt.js and grade1-questions.js are loaded
+  function loadScriptIfNeeded(src, callback) {
     var isSubGame = window.location.pathname.indexOf("/games/") !== -1;
-    script.src = isSubGame ? "../../assets/js/grade1-questions.js" : "assets/js/grade1-questions.js";
-    script.onload = initGrade1Selector;
+    var fullSrc = isSubGame ? "../../" + src : src;
+    var script = document.createElement("script");
+    script.src = fullSrc;
+    script.onload = callback;
     document.head.appendChild(script);
+  }
+
+  if (!window.GRADE1_KNTT) {
+    loadScriptIfNeeded("assets/js/grade1-kntt.js", function() {
+      if (!window.GRADE1_QUESTIONS) {
+        loadScriptIfNeeded("assets/js/grade1-questions.js", initGrade1Selector);
+      } else {
+        initGrade1Selector();
+      }
+    });
   } else {
     initGrade1Selector();
   }
