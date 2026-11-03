@@ -13,6 +13,43 @@
     "#a855f7", "#059669", "#0284c7", "#f43f5e", "#78716c"
   ];
 
+  // 33 students of Class 1B1
+  const LOP_1B1_NAMES = [
+    "Nguyễn Hoàng Anh",
+    "Nguyễn Quỳnh Anh",
+    "Nguyễn Thiện Nhật Anh",
+    "Lê Gia Bảo",
+    "Nguyễn Khắc Quốc Bảo",
+    "Chu Thị Linh Chi",
+    "Hoàng Thùy Dung",
+    "Cao Anh Dũng",
+    "Phan Nguyễn Bảo Duy",
+    "Lê Hà Giang",
+    "Hoàng Gia Hân",
+    "Nguyễn Mạnh Hoàng",
+    "Bùi Quang Huy",
+    "Lê Gia Hưng",
+    "Nguyễn Anh Khang",
+    "Nguyễn Đình Bảo Khang",
+    "Nguyễn Xuân Minh Khang",
+    "Phạm Nguyên Khang",
+    "Võ Tuấn Kiệt",
+    "Trần Hương Ly",
+    "Lê Hữu Nhật Minh",
+    "Nguyễn Phan Hà My",
+    "Trương Thị Bảo Ngân",
+    "Bùi Khánh Ngọc",
+    "Phan Bảo Ngọc",
+    "Nguyễn Trọng Nhân",
+    "Nguyễn Tuấn Phát",
+    "Lê Quốc Phong",
+    "Nguyễn Hữu Phúc",
+    "Bùi Dương Hoài Thương",
+    "Hoàng Minh Trang",
+    "Trần Nguyễn Minh Triết",
+    "Nguyễn Tường Vy"
+  ];
+
   // Default 23 student names matching Online-Stopwatch sample
   const DEFAULT_23_NAMES = [
     "Minh Khang", "Bảo An", "Gia Huy", "Tú Anh", "Hải Đăng",
@@ -55,7 +92,10 @@
   const nextRaceBtn = document.getElementById("nextRaceBtn");
 
   // Settings
-  let names = SA.Names.load("duavit", DEFAULT_23_NAMES);
+  let names = SA.Names.load("duavit", LOP_1B1_NAMES);
+  if (names.length === 23 && names[0] === "Minh Khang" && names[1] === "Bảo An") {
+    names = LOP_1B1_NAMES;
+  }
   let quizPool = SA.Quiz.load("duavit", SA.Quiz.parse(DEFAULT_QUIZ_TEXT));
   let raceDurationSec = parseInt(localStorage.getItem("sa_duavit_duration") || "25");
 
@@ -701,20 +741,36 @@
   });
 
   // Presets in Modal
-  document.getElementById("preset23Btn").addEventListener("click", () => {
-    namesInput.value = DEFAULT_23_NAMES.join("\n");
-    if (window.SA && SA.toast) SA.toast("Đã nạp 23 chú vịt!");
-  });
-  document.getElementById("preset35Btn").addEventListener("click", () => {
-    const list35 = [];
-    for (let i = 1; i <= 35; i++) list35.push(`Học sinh ${i}`);
-    namesInput.value = list35.join("\n");
-    if (window.SA && SA.toast) SA.toast("Đã nạp cả lớp 35 bạn!");
-  });
-  document.getElementById("preset5TeamsBtn").addEventListener("click", () => {
-    namesInput.value = ["Tổ 1 (Sóc Nâu)", "Tổ 2 (Thỏ Trắng)", "Tổ 3 (Gấu Misa)", "Tổ 4 (Hổ Con)", "Tổ 5 (Sư Tử)"].join("\n");
-    if (window.SA && SA.toast) SA.toast("Đã nạp 5 Tổ!");
-  });
+  const preset1B1Btn = document.getElementById("preset1B1Btn");
+  if (preset1B1Btn) {
+    preset1B1Btn.addEventListener("click", () => {
+      namesInput.value = LOP_1B1_NAMES.join("\n");
+      if (window.SA && SA.toast) SA.toast("✅ Đã nạp 33 bạn học sinh Lớp 1B1!");
+    });
+  }
+  const preset23Btn = document.getElementById("preset23Btn");
+  if (preset23Btn) {
+    preset23Btn.addEventListener("click", () => {
+      namesInput.value = DEFAULT_23_NAMES.join("\n");
+      if (window.SA && SA.toast) SA.toast("Đã nạp 23 chú vịt!");
+    });
+  }
+  const preset35Btn = document.getElementById("preset35Btn");
+  if (preset35Btn) {
+    preset35Btn.addEventListener("click", () => {
+      const list35 = [];
+      for (let i = 1; i <= 35; i++) list35.push(`Học sinh ${i}`);
+      namesInput.value = list35.join("\n");
+      if (window.SA && SA.toast) SA.toast("Đã nạp cả lớp 35 bạn!");
+    });
+  }
+  const preset5TeamsBtn = document.getElementById("preset5TeamsBtn");
+  if (preset5TeamsBtn) {
+    preset5TeamsBtn.addEventListener("click", () => {
+      namesInput.value = ["Tổ 1 (Sóc Nâu)", "Tổ 2 (Thỏ Trắng)", "Tổ 3 (Gấu Misa)", "Tổ 4 (Hổ Con)", "Tổ 5 (Sư Tử)"].join("\n");
+      if (window.SA && SA.toast) SA.toast("Đã nạp 5 Tổ!");
+    });
+  }
 
   // Duration Presets
   document.querySelectorAll(".duration-preset").forEach(btn => {

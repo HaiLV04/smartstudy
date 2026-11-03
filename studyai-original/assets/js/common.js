@@ -80,6 +80,9 @@ const SA = (() => {
     if (window.initGrade1Selector) {
       try { window.initGrade1Selector(); } catch(e) {}
     }
+    if (window.initStudentRosterSelector) {
+      try { window.initStudentRosterSelector(); } catch(e) {}
+    }
   }
   function closeModal(id) { 
     var el = document.getElementById(id);
@@ -138,24 +141,64 @@ const SA = (() => {
     }
   };
 
+  /* ---------- Danh sách 33 học sinh Lớp 1B1 ---------- */
+  const CLASS_1B1_NAMES = [
+    "Nguyễn Hoàng Anh",
+    "Nguyễn Quỳnh Anh",
+    "Nguyễn Thiện Nhật Anh",
+    "Lê Gia Bảo",
+    "Nguyễn Khắc Quốc Bảo",
+    "Chu Thị Linh Chi",
+    "Hoàng Thùy Dung",
+    "Cao Anh Dũng",
+    "Phan Nguyễn Bảo Duy",
+    "Lê Hà Giang",
+    "Hoàng Gia Hân",
+    "Nguyễn Mạnh Hoàng",
+    "Bùi Quang Huy",
+    "Lê Gia Hưng",
+    "Nguyễn Anh Khang",
+    "Nguyễn Đình Bảo Khang",
+    "Nguyễn Xuân Minh Khang",
+    "Phạm Nguyên Khang",
+    "Võ Tuấn Kiệt",
+    "Trần Hương Ly",
+    "Lê Hữu Nhật Minh",
+    "Nguyễn Phan Hà My",
+    "Trương Thị Bảo Ngân",
+    "Bùi Khánh Ngọc",
+    "Phan Bảo Ngọc",
+    "Nguyễn Trọng Nhân",
+    "Nguyễn Tuấn Phát",
+    "Lê Quốc Phong",
+    "Nguyễn Hữu Phúc",
+    "Bùi Dương Hoài Thương",
+    "Hoàng Minh Trang",
+    "Trần Nguyễn Minh Triết",
+    "Nguyễn Tường Vy"
+  ];
+
   /* ---------- Danh sách tên (đội / học sinh) ---------- */
   const Names = {
+    CLASS_1B1: CLASS_1B1_NAMES,
     save(key, names) { localStorage.setItem("sa_names_" + key, JSON.stringify(names)); },
     load(key, fallback) {
       try {
         const raw = localStorage.getItem("sa_names_" + key);
-        if (!raw) return fallback;
+        if (!raw) return fallback || CLASS_1B1_NAMES;
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) && parsed.length ? parsed : fallback;
-      } catch (e) { return fallback; }
+        return Array.isArray(parsed) && parsed.length ? parsed : (fallback || CLASS_1B1_NAMES);
+      } catch (e) { return fallback || CLASS_1B1_NAMES; }
     },
     parseText(text) {
       return text.split("\n").map(s => s.trim()).filter(Boolean);
     }
   };
 
-  return { toast, confetti, beep, openModal, closeModal, shuffle, Quiz, Names };
+  return { toast, confetti, beep, openModal, closeModal, shuffle, Quiz, Names, CLASS_1B1_NAMES };
 })();
+
+window.SA = SA;
 
 
 
@@ -424,6 +467,58 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   window.initGrade1Selector = initGrade1Selector;
+
+  // Auto attach student roster selector to any namesInput
+  function initStudentRosterSelector() {
+    var namesInput = document.getElementById("namesInput");
+    if (!namesInput || namesInput.dataset.hasRosterPicker) return;
+    namesInput.dataset.hasRosterPicker = "true";
+
+    // If default is empty, prefill with 1B1
+    if (!namesInput.value.trim() && window.SA && SA.CLASS_1B1_NAMES) {
+      namesInput.value = SA.CLASS_1B1_NAMES.join("\n");
+    }
+
+    // If preset1B1Btn already exists in HTML, skip adding extra bar
+    if (document.getElementById("preset1B1Btn")) return;
+
+    var bar = document.createElement("div");
+    bar.className = "sa-roster-quickbar";
+    bar.style.cssText = "display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;";
+
+    var label = document.createElement("span");
+    label.style.cssText = "font-size:0.8rem; font-weight:800; color:#0369a1;";
+    label.textContent = "⚡ Nạp nhanh danh sách:";
+
+    var btn1B1 = document.createElement("button");
+    btn1B1.type = "button";
+    btn1B1.innerHTML = "🎒 <b>Lớp 1B1 (33 học sinh)</b>";
+    btn1B1.style.cssText = "padding:6px 14px; background:#0284c7; color:#fff; border:none; border-radius:6px; font-size:0.82rem; font-weight:800; cursor:pointer; box-shadow:0 2px 4px rgba(2,132,199,0.2);";
+    btn1B1.addEventListener("click", function() {
+      if (window.SA && SA.CLASS_1B1_NAMES) {
+        namesInput.value = SA.CLASS_1B1_NAMES.join("\n");
+        if (SA.toast) SA.toast("✅ Đã nạp 33 bạn học sinh Lớp 1B1!");
+      }
+    });
+
+    var btn5To = document.createElement("button");
+    btn5To.type = "button";
+    btn5To.innerHTML = "👥 5 Tổ";
+    btn5To.style.cssText = "padding:6px 12px; background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;";
+    btn5To.addEventListener("click", function() {
+      namesInput.value = ["Tổ 1 (Sóc Nâu)", "Tổ 2 (Thỏ Trắng)", "Tổ 3 (Gấu Misa)", "Tổ 4 (Hổ Con)", "Tổ 5 (Sư Tử)"].join("\n");
+      if (window.SA && SA.toast) SA.toast("✅ Đã nạp 5 Tổ!");
+    });
+
+    bar.appendChild(label);
+    bar.appendChild(btn1B1);
+    bar.appendChild(btn5To);
+
+    namesInput.parentNode.insertBefore(bar, namesInput);
+  }
+
+  window.initStudentRosterSelector = initStudentRosterSelector;
+  initStudentRosterSelector();
 
   // Ensure grade1-kntt.js is loaded
   function loadScript(src, cb) {
