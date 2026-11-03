@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vòng Quay May Mắn — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎡</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .wheel-layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .wheel-layout { grid-template-columns: 1fr; } }
+  .wheel-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .wheel-holder { position: relative; width: 320px; height: 320px; }
+  .wheel-pointer {
+    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0; z-index: 5;
+    border-left: 16px solid transparent; border-right: 16px solid transparent;
+    border-top: 28px solid var(--brand-3); filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+  }
+  #wheelCanvas { border-radius: 50%; box-shadow: var(--shadow-lg); transition: transform 4.2s cubic-bezier(.17,.67,.16,1); }
+  .wheel-hub {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 54px; height: 54px; border-radius: 50%;
+    background: #fff; box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; z-index: 4;
+  }
+  .picked-banner {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    color: #fff; border-radius: var(--radius-md); padding: 16px 20px;
+    text-align: center; font-weight: 800; font-size: 1.1rem; width: 100%;
+    display: none;
+  }
+  .picked-banner.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎡 Vòng Quay May Mắn</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" onclick="SA.openModal('settingsModal')">⚙️ Soạn câu hỏi &amp; danh sách</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+
+      <div class="side-note">
+        💡 Quay vòng quay để chọn ngẫu nhiên một học sinh/đội, sau đó bấm "Hiện câu hỏi" để cả lớp cùng trả lời trắc nghiệm.
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Điểm lớp: <span id="classScore">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Câu hỏi: <span id="qProgress">0/0</span></div>
+      </div>
+
+      <div class="wheel-layout">
+        <div class="game-panel wheel-wrap">
+          <div class="wheel-holder">
+            <div class="wheel-pointer"></div>
+            <canvas id="wheelCanvas" width="320" height="320"></canvas>
+            <div class="wheel-hub">🎯</div>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block" id="spinBtn">🎡 Quay ngay</button>
+          <div class="picked-banner" id="pickedBanner"></div>
+        </div>
+
+        <div class="game-panel">
+          <div id="questionArea">
+            <div class="empty-state">
+              <div class="emoji">🎡</div>
+              <p>Hãy quay vòng quay để chọn học sinh, sau đó câu hỏi sẽ hiện ra ở đây.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal soạn câu hỏi & danh sách -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi &amp; danh sách tên</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách tên trên vòng quay (mỗi dòng 1 tên)</label>
+        <textarea id="namesInput" rows="6"></textarea>
+        <p class="field-hint">Có thể là tên học sinh, tổ, hoặc nhóm. Tối thiểu 2 tên.</p>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

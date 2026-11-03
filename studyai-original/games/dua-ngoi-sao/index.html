@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đua Ngôi Sao — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⭐</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .race-lane { margin-bottom: 22px; }
+  .race-lane-head { display:flex; justify-content:space-between; font-weight:800; margin-bottom:8px; font-size:.95rem; }
+  .race-track { position: relative; height: 54px; border-radius: 16px; background: var(--ink-100); border: 2px solid var(--ink-300); overflow: hidden; }
+  .race-stars { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; padding:0 14px; font-size:1.1rem; opacity:.55; }
+  .race-runner {
+    position: absolute; top: 50%; transform: translate(-50%,-50%) scaleX(-1); font-size: 1.9rem;
+    transition: left .7s cubic-bezier(.2,.7,.3,1); z-index:2; filter: drop-shadow(0 3px 3px rgba(0,0,0,.2));
+  }
+  .race-finish { position:absolute; right:6px; top:0; bottom:0; display:flex; align-items:center; font-size:1.3rem; z-index:1; }
+  .turn-banner { text-align: center; font-weight: 700; color: var(--ink-500); margin: 18px 0 6px; font-size: .9rem; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">⭐ Đua Ngôi Sao</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi &amp; đội chơi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Hai đội lần lượt trả lời — mỗi câu đúng sẽ giúp đội tiến thêm một bước trên đường đua. Đội về đích trước sẽ chiến thắng!</div>
+
+      <div class="game-panel">
+        <div class="race-lane">
+          <div class="race-lane-head"><span id="teamALabel" style="color:var(--brand-2);">🔵 Đội A</span><span id="teamAStep">0/8</span></div>
+          <div class="race-track">
+            <div class="race-stars" id="starsA"></div>
+            <div class="race-finish">🏁</div>
+            <div class="race-runner" id="runnerA" style="left:4%;">🏃</div>
+          </div>
+        </div>
+        <div class="race-lane">
+          <div class="race-lane-head"><span id="teamBLabel" style="color:var(--brand-3);">🟠 Đội B</span><span id="teamBStep">0/8</span></div>
+          <div class="race-track">
+            <div class="race-stars" id="starsB"></div>
+            <div class="race-finish">🏁</div>
+            <div class="race-runner" id="runnerB" style="left:4%;">🏃</div>
+          </div>
+        </div>
+
+        <div class="turn-banner" id="turnBanner">Lượt của Đội A</div>
+        <div id="questionArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi &amp; đội chơi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row form-row-inline">
+        <div>
+          <label class="field-label">Tên Đội A</label>
+          <input type="text" id="teamAInput">
+        </div>
+        <div>
+          <label class="field-label">Tên Đội B</label>
+          <input type="text" id="teamBInput">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

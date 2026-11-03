@@ -1,0 +1,97 @@
+// ==============================================================
+// PRISMA SCHEMA ADD-ON: HỆ THỐNG ĐỀ THI & CÂU HỎI TRẮC NGHIỆM
+// Sao chép các model này vào file prisma/schema.prisma của bạn
+// ==============================================================
+
+model Exam {
+  id              String         @id @default(uuid())
+  slug            String         @unique
+  title           String
+  grade           Int            // 1, 2, 3, 4, 5
+  subject         String         // MATH, VIETNAMESE, SCIENCE, HISTORY_GEOGRAPHY, ENGLISH
+  subjectName     String         // "Toán học", "Tiếng Việt", v.v.
+  semester        Int            @default(1) // 1 hoặc 2
+  durationMinutes Int            @default(45)
+  totalPoints     Float          @default(10)
+  description     String?        @db.Text
+  difficulty      Difficulty     @default(MEDIUM)
+  isPublished     Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  questions       Question[]
+  submissions     ExamSubmission[]
+
+  @@index([grade, subject])
+}
+
+model Question {
+  id             String         @id @default(uuid())
+  examId         String
+  questionNumber Int
+  content        String         @db.Text
+  type           QuestionType   @default(MULTIPLE_CHOICE)
+  points         Float          @default(1.0)
+  difficulty     Difficulty     @default(MEDIUM)
+  explanation    String?        @db.Text
+  createdAt      DateTime       @default(now())
+
+  exam           Exam           @relation(fields: [examId], references: [id], onDelete: Cascade)
+  options        QuestionOption[]
+  studentAnswers StudentAnswer[]
+
+  @@index([examId])
+}
+
+model QuestionOption {
+  id         String   @id @default(uuid())
+  questionId String
+  key        String   // "A", "B", "C", "D"
+  content    String   @db.Text
+  isCorrect  Boolean  @default(false)
+
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+}
+
+model ExamSubmission {
+  id          String         @id @default(uuid())
+  examId      String
+  studentId   String?        // Liên kết với model Student nếu có
+  studentName String?
+  totalScore  Float          @default(0)
+  timeSpentSec Int           @default(0)
+  completedAt DateTime       @default(now())
+
+  exam        Exam           @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers     StudentAnswer[]
+
+  @@index([examId])
+}
+
+model StudentAnswer {
+  id           String         @id @default(uuid())
+  submissionId String
+  questionId   String
+  selectedKey  String         // "A", "B", "C", "D"
+  isCorrect    Boolean        @default(false)
+  scoreEarned  Float          @default(0)
+
+  submission   ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question     Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  FILL_BLANK
+  ESSAY
+}

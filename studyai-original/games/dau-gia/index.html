@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đấu Giá Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .team-scoreboard { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .team-chip {
+    background: var(--surface); border: 2px solid var(--ink-100); border-radius: var(--radius-md);
+    padding: 10px 16px; font-weight: 700; font-size: 0.85rem; min-width: 120px;
+  }
+  .team-chip.active { border-color: var(--brand-2); background: #eef4ff; box-shadow: var(--shadow-sm); }
+  .team-chip .t-name { display: block; margin-bottom: 4px; }
+  .team-chip .t-pts { font-size: 1.15rem; font-weight: 900; color: var(--brand-2); }
+  .round-banner { text-align: center; font-weight: 800; font-size: 1.05rem; margin-bottom: 14px; }
+  .round-banner b { color: var(--brand-3); }
+  .wager-box { max-width: 420px; margin: 0 auto; text-align: center; }
+  .wager-box .wager-row { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 18px 0; }
+  .wager-box input[type=number] { width: 130px; text-align: center; font-weight: 800; font-size: 1.1rem; }
+  .wager-hint { font-size: 0.8rem; color: var(--ink-500); margin-top: 4px; }
+  .podium-list { display: flex; flex-direction: column; gap: 8px; max-width: 380px; margin: 0 auto 20px; }
+  .podium-row { display: flex; align-items: center; gap: 10px; background: var(--ink-100); border-radius: var(--radius-sm); padding: 10px 14px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎯 Đấu Giá Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi &amp; đội chơi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Mỗi lượt, đội đến lượt sẽ đặt cược một số điểm (tối thiểu 10) trước khi xem đáp án lựa chọn. Trả lời đúng thì cộng số điểm đã cược, trả lời sai thì trừ đi. Ai nhiều điểm nhất sau khi hết câu hỏi sẽ thắng!</div>
+
+      <div class="team-scoreboard" id="teamScoreboard"></div>
+
+      <div class="game-panel">
+        <div class="round-banner" id="roundBanner">—</div>
+        <div id="questionArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi &amp; đội chơi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách đội chơi (mỗi dòng 1 đội, từ 2 đến 6 đội)</label>
+        <textarea id="teamsInput" rows="5"></textarea>
+        <p class="field-hint">Mỗi đội bắt đầu với 100 điểm. Chỉ 6 dòng đầu tiên được sử dụng nếu bạn nhập nhiều hơn 6 đội.</p>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giải Cứu Khinh Khí Cầu — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎈</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .sky-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 780px) { .sky-layout { grid-template-columns: 1fr; } }
+  .sky-wrap {
+    position: relative; height: 440px; border-radius: var(--radius-md); overflow: hidden;
+    background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 45%, #e0f2fe 100%);
+    border: 2px solid #38bdf8;
+  }
+  .storm-cloud-fill {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+    background: linear-gradient(180deg, #475569, #1e293b);
+    transition: height .7s ease;
+  }
+  .storm-cloud-fill::before {
+    content: "⛈️"; position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    font-size: 1.8rem;
+  }
+  .balloon {
+    position: absolute; left: 50%; bottom: 4%; transform: translate(-50%, 50%);
+    font-size: 2.6rem; z-index: 4; transition: bottom .7s cubic-bezier(.3,.7,.3,1);
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,.3));
+  }
+  .sandbag-drop {
+    position: absolute; font-size: 1.1rem; z-index: 3; pointer-events: none;
+  }
+  .altitude-target {
+    position: absolute; top: 6%; left: 0; right: 0; border-top: 2px dashed rgba(255,255,255,.8);
+    text-align: right; font-size: .68rem; font-weight: 800; color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+  .altitude-target span { background: rgba(15,23,42,.4); padding: 2px 6px; border-radius: 6px; }
+  .sky-stats { display: flex; flex-direction: column; gap: 14px; }
+  .sky-stat-card {
+    background: var(--surface); border: 1px solid var(--ink-100); border-radius: var(--radius-md);
+    padding: 14px 16px; box-shadow: var(--shadow-sm);
+  }
+  .sky-stat-card b { display: block; font-size: 1.5rem; font-weight: 800; color: var(--brand-2); }
+  .sky-stat-card span { font-size: .78rem; color: var(--ink-500); font-weight: 600; }
+  .sky-stat-card.danger b { color: var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎈 Giải Cứu Khinh Khí Cầu</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Cơn bão đang dâng lên từ phía dưới! Trả lời đúng để thả bao cát, giúp khinh khí cầu bay cao hơn thoát khỏi bão. Trả lời sai, bão sẽ tiến gần lại — cẩn thận kẻo bị bão nuốt chửng!</div>
+
+      <div class="sky-layout">
+        <div class="sky-stats">
+          <div class="sky-stat-card"><b id="qStat">0/0</b><span>Câu đã trả lời</span></div>
+          <div class="sky-stat-card"><b id="altStat">0%</b><span>Độ cao khinh khí cầu</span></div>
+          <div class="sky-stat-card danger"><b id="gapStat">100%</b><span>Khoảng cách an toàn với bão</span></div>
+        </div>
+
+        <div class="game-panel">
+          <div class="sky-layout" style="grid-template-columns: 180px 1fr; gap: 18px;">
+            <div class="sky-wrap" id="skyWrap">
+              <div class="altitude-target"><span>🏁 Đích</span></div>
+              <div class="storm-cloud-fill" id="stormFill"></div>
+              <div class="balloon" id="balloon">🎈</div>
+            </div>
+            <div id="questionArea"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Trả lời đúng hết hoặc bay tới đích trước khi bão bắt kịp sẽ chiến thắng.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

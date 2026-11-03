@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thẻ Lật Ghi Nhớ — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🃏</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .flash-wrap { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .flash-card-holder { width: min(100%, 480px); height: 280px; perspective: 1400px; }
+  .flash-card {
+    position: relative; width: 100%; height: 100%; cursor: pointer;
+    transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,.2,.2,1);
+  }
+  .flash-card.flipped { transform: rotateY(180deg); }
+  .flash-face {
+    position: absolute; inset: 0; border-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 28px; backface-visibility: hidden; box-shadow: var(--shadow-lg);
+    font-weight: 800; font-size: 1.3rem; line-height: 1.5;
+  }
+  .flash-face.front { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: #fff; }
+  .flash-face.back { background: #fff; border: 2px solid var(--brand-3); color: var(--ink-900); transform: rotateY(180deg); }
+  .flash-hint { font-size: .78rem; font-weight: 600; opacity: .8; position: absolute; bottom: 14px; left: 0; right: 0; }
+  .flash-actions { display: flex; gap: 14px; }
+  .flash-actions .btn { min-width: 150px; }
+  .deck-progress { display:flex; gap: 20px; font-weight:700; font-size:.9rem; color: var(--ink-500); }
+  .deck-dots { display:flex; gap:6px; flex-wrap:wrap; max-width: 480px; justify-content:center; }
+  .deck-dot { width:10px; height:10px; border-radius:50%; background: var(--ink-300); }
+  .deck-dot.known { background: var(--success); }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🃏 Thẻ Lật Ghi Nhớ</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn bộ thẻ</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Học lại từ đầu</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Bấm vào thẻ để lật xem đáp án, sau đó tự đánh giá bạn đã thuộc hay chưa. Thẻ "Chưa thuộc" sẽ quay lại ở cuối lượt học.</div>
+
+      <div class="game-panel flash-wrap">
+        <div class="deck-progress">
+          <span>✅ Đã thuộc: <span id="knownCount">0</span>/<span id="totalCount">0</span></span>
+        </div>
+        <div class="deck-dots" id="deckDots"></div>
+
+        <div class="flash-card-holder">
+          <div class="flash-card" id="flashCard">
+            <div class="flash-face front">
+              <div id="frontText">Đang tải...</div>
+              <div class="flash-hint">👆 Bấm để xem đáp án</div>
+            </div>
+            <div class="flash-face back">
+              <div id="backText"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flash-actions" id="flashActions" style="display:none;">
+          <button class="btn btn-outline btn-lg" id="dontKnowBtn">🔁 Chưa thuộc</button>
+          <button class="btn btn-primary btn-lg" id="knowBtn">✅ Đã thuộc</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn bộ thẻ ghi nhớ</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách thẻ</label>
+        <textarea id="cardsInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 thẻ, theo mẫu: <b>Mặt trước | Mặt sau</b>. Ví dụ: <i>Thủ đô của Việt Nam | Hà Nội</i></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

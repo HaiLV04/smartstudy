@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rung Chuông Vàng — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .rcv-board {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px;
+  }
+  .rcv-chip {
+    flex: 1; min-width: 200px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #fff; border-radius: var(--radius-lg);
+    padding: 18px 22px; text-align: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(250, 204, 21, 0.25);
+  }
+  .rcv-chip .label { font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.6); font-weight: 700; }
+  .rcv-chip .value { font-size: 2.3rem; font-weight: 900; margin-top: 4px; }
+  .rcv-chip.gold .value { background: linear-gradient(135deg, var(--brand-4), #fbbf24); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rcv-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 720px; margin: 26px auto 0; }
+  @media (max-width: 560px) { .rcv-options { grid-template-columns: 1fr; } }
+  .rcv-opt {
+    background: var(--surface); border: 2px solid var(--ink-100); border-radius: var(--radius-md);
+    padding: 16px 18px; font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 12px;
+    color: var(--ink-900); transition: all 0.2s ease;
+  }
+  .rcv-opt .opt-key { width: 30px; height: 30px; border-radius: 9px; background: var(--ink-100); color: var(--ink-700); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+  .rcv-opt.revealed-correct { border-color: var(--success); background: #f0fdf4; animation: rcvPulse 0.6s ease; }
+  .rcv-opt.revealed-correct .opt-key { background: var(--success); color: #fff; }
+  @keyframes rcvPulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
+  .rcv-confirm-box { max-width: 420px; margin: 26px auto 0; text-align: center; background: var(--surface-soft); border: 1px solid var(--ink-100); border-radius: var(--radius-md); padding: 20px; }
+  .rcv-confirm-box .field-label { text-align: left; }
+  .rcv-final { text-align: center; padding: 30px 10px; }
+  .rcv-final .emoji { font-size: 4rem; margin-bottom: 10px; }
+  .rcv-final h3 { font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
+  .rcv-final.win h3 { background: linear-gradient(135deg, var(--brand-4), #fbbf24); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rcv-final p { color: var(--ink-500); margin-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🔔 Rung Chuông Vàng</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Giáo viên điều khiển màn hình chung: hiện câu hỏi, cho học sinh viết đáp án ra bảng con/giấy, rồi bấm "Hiện đáp án đúng". Sau đó nhập số học sinh trả lời đúng ở vòng này — đó sẽ là số học sinh còn lại bước vào vòng tiếp theo.</div>
+
+      <div class="rcv-board">
+        <div class="rcv-chip"><div class="label">Vòng thi</div><div class="value" id="roundVal">1/0</div></div>
+        <div class="rcv-chip gold"><div class="label">Học sinh còn lại</div><div class="value" id="remainVal">0</div></div>
+      </div>
+
+      <div class="game-panel">
+        <div id="questionArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn nội dung Rung Chuông Vàng</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Số học sinh tham gia ban đầu</label>
+        <input type="number" id="startCountInput" min="1" max="500" value="30">
+        <p class="field-hint">Mặc định 30 học sinh. Có thể chỉnh theo sĩ số lớp thực tế.</p>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Nên soạn nhiều câu, khó tăng dần, để trò chơi kéo dài kịch tính.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

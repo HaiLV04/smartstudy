@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leo Núi Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧗</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .mountain-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 780px) { .mountain-layout { grid-template-columns: 1fr; } }
+  .mountain-wrap { position: relative; height: 440px; }
+  .mountain-shape {
+    position: absolute; inset: 0;
+    clip-path: polygon(50% 0%, 92% 100%, 8% 100%);
+    background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 22%, #64748b 55%, #334155 82%, #1e293b 100%);
+  }
+  .mountain-snowcap {
+    position: absolute; top: 0; left: 38%; width: 24%; height: 14%;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    background: #fff;
+  }
+  .mountain-flag {
+    position: absolute; top: -4px; left: 50%; transform: translateX(-50%) scale(0);
+    font-size: 1.8rem; z-index: 5; transition: transform .4s cubic-bezier(.2,.8,.3,1.4);
+  }
+  .mountain-flag.show { transform: translateX(-50%) scale(1); }
+  .climber {
+    position: absolute; font-size: 1.9rem; z-index: 4;
+    transform: translate(-50%, 50%) scaleX(-1);
+    transition: left .6s cubic-bezier(.3,.7,.3,1), bottom .6s cubic-bezier(.3,.7,.3,1);
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,.35));
+  }
+  .altitude-meter {
+    position: absolute; right: -8px; top: 0; bottom: 0; width: 10px;
+    background: var(--ink-100); border-radius: 999px; overflow: hidden; border: 1px solid var(--ink-300);
+  }
+  .altitude-fill {
+    position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, var(--brand-4), var(--brand-3));
+    transition: height .6s ease;
+  }
+  .climb-stats { display: flex; flex-direction: column; gap: 14px; }
+  .climb-stat-card {
+    background: var(--surface); border: 1px solid var(--ink-100); border-radius: var(--radius-md);
+    padding: 14px 16px; box-shadow: var(--shadow-sm);
+  }
+  .climb-stat-card b { display: block; font-size: 1.5rem; font-weight: 800; color: var(--brand-2); }
+  .climb-stat-card span { font-size: .78rem; color: var(--ink-500); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🧗 Leo Núi Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Cả lớp cùng trả lời từng câu hỏi. Trả lời đúng, nhà leo núi tiến lên một bước; trả lời sai sẽ bị trượt xuống một chút. Hãy giúp bạn ấy chinh phục đỉnh núi!</div>
+
+      <div class="mountain-layout">
+        <div class="climb-stats">
+          <div class="climb-stat-card"><b id="stepStat">0/0</b><span>Câu đã qua</span></div>
+          <div class="climb-stat-card"><b id="altStat">0%</b><span>Độ cao hiện tại</span></div>
+          <div class="climb-stat-card"><b id="streakStat">0</b><span>Chuỗi trả lời đúng</span></div>
+        </div>
+
+        <div class="game-panel">
+          <div class="mountain-layout" style="grid-template-columns: 200px 1fr; gap: 18px;">
+            <div class="mountain-wrap">
+              <div class="mountain-shape"></div>
+              <div class="mountain-snowcap"></div>
+              <div class="mountain-flag" id="mountainFlag">🚩</div>
+              <div class="climber" id="climber" style="left:50%; bottom:2%;">🧗</div>
+              <div class="altitude-meter"><div class="altitude-fill" id="altitudeFill" style="height:0%;"></div></div>
+            </div>
+            <div id="questionArea"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm (thứ tự leo núi)</label>
+        <textarea id="quizInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Trả lời đúng câu cuối cùng sẽ giúp cả lớp lên tới đỉnh!</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

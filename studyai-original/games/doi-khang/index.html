@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đối Kháng Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .duel-arena { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 20px; flex-wrap: wrap; }
+  .fighter { flex: 1; min-width: 220px; text-align: center; }
+  .fighter-name { font-weight: 800; font-size: 1.05rem; margin-bottom: 6px; }
+  .fighter.a .fighter-name { color: var(--brand-2); }
+  .fighter.b .fighter-name { color: var(--brand-3); }
+  .fighter-avatar { font-size: 3.6rem; margin-bottom: 10px; display: inline-block; transition: transform .1s ease; }
+  .fighter-avatar.hit { animation: hitShake .4s; }
+  @keyframes hitShake {
+    0%,100% { transform: translateX(0) rotate(0deg); }
+    20% { transform: translateX(-10px) rotate(-6deg); }
+    40% { transform: translateX(8px) rotate(5deg); }
+    60% { transform: translateX(-6px) rotate(-3deg); }
+    80% { transform: translateX(4px) rotate(2deg); }
+  }
+  .hp-bar-track { height: 20px; border-radius: 999px; background: var(--ink-100); border: 2px solid var(--ink-300); overflow: hidden; }
+  .hp-bar-fill { height: 100%; transition: width .5s ease; border-radius: 999px; }
+  .fighter.a .hp-bar-fill { background: linear-gradient(90deg,#0ea5a4,#2563eb); }
+  .fighter.b .hp-bar-fill { background: linear-gradient(90deg,#facc15,#f97316); }
+  .hp-label { font-size: 0.78rem; font-weight: 700; color: var(--ink-500); margin-top: 4px; }
+  .vs-badge { align-self: center; font-weight: 900; font-size: 1.4rem; color: var(--ink-300); padding-top: 40px; }
+  .turn-banner { text-align: center; font-weight: 800; color: var(--ink-900); margin-bottom: 6px; font-size: 1.05rem; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">⚔️ Đối Kháng Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi &amp; người chơi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Hai người chơi lần lượt trả lời câu hỏi. Trả lời đúng sẽ gây sát thương cho đối thủ; trả lời sai thì không mất máu nhưng mất lượt. Ai đưa máu đối thủ về 0 trước sẽ chiến thắng!</div>
+
+      <div class="game-panel">
+        <div class="duel-arena">
+          <div class="fighter a">
+            <div class="fighter-name" id="nameA">Người chơi A</div>
+            <div class="fighter-avatar" id="avatarA">🧑‍🎓</div>
+            <div class="hp-bar-track"><div class="hp-bar-fill" id="hpFillA" style="width:100%;"></div></div>
+            <div class="hp-label"><span id="hpTextA">100</span>/100 HP</div>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="fighter b">
+            <div class="fighter-name" id="nameB">Người chơi B</div>
+            <div class="fighter-avatar" id="avatarB">🧑‍🏫</div>
+            <div class="hp-bar-track"><div class="hp-bar-fill" id="hpFillB" style="width:100%;"></div></div>
+            <div class="hp-label"><span id="hpTextB">100</span>/100 HP</div>
+          </div>
+        </div>
+
+        <div class="turn-banner" id="turnBanner">Lượt của Người chơi A</div>
+        <div id="questionArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi &amp; người chơi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row form-row-inline">
+        <div>
+          <label class="field-label">Tên Người chơi A</label>
+          <input type="text" id="nameAInput">
+        </div>
+        <div>
+          <label class="field-label">Tên Người chơi B</label>
+          <input type="text" id="nameBInput">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

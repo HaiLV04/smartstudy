@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trắc Nghiệm Theo Nhịp Độ — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏱️</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .tnd-progress { text-align: center; font-weight: 800; font-size: 1.1rem; color: var(--brand-2); margin-bottom: 14px; }
+  .tnd-timer-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 30px; }
+  .tnd-ring { position: relative; width: 150px; height: 150px; }
+  .tnd-ring svg { transform: rotate(-90deg); width: 150px; height: 150px; }
+  .tnd-ring circle { fill: none; stroke-width: 12; }
+  .tnd-ring .bg { stroke: var(--ink-100); }
+  .tnd-ring .fg { stroke: var(--brand-2); stroke-linecap: round; transition: stroke-dashoffset 0.2s linear, stroke 0.3s ease; }
+  .tnd-ring .fg.urgent { stroke: var(--danger); }
+  .tnd-ring-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; font-weight: 900; color: var(--ink-900); }
+  .tnd-question { font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 900; text-align: center; max-width: 900px; margin: 0 auto 34px; color: var(--ink-900); line-height: 1.35; }
+  .tnd-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 900px; margin: 0 auto 30px; }
+  @media (max-width: 640px) { .tnd-options { grid-template-columns: 1fr; } }
+  .tnd-opt { background: var(--surface); border: 3px solid var(--ink-100); border-radius: var(--radius-lg); padding: 22px 24px; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 16px; color: var(--ink-900); }
+  .tnd-opt .opt-key { width: 42px; height: 42px; border-radius: 12px; background: var(--ink-100); color: var(--ink-700); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; flex-shrink: 0; }
+  .tnd-opt.correct-reveal { border-color: var(--success); background: #f0fdf4; animation: tndPulse 0.7s ease; }
+  .tnd-opt.correct-reveal .opt-key { background: var(--success); color: #fff; }
+  @keyframes tndPulse { 0% { transform: scale(1); } 45% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  .tnd-controls { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">⏱️ Trắc Nghiệm Theo Nhịp Độ</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Chiếu màn hình lớn cho cả lớp cùng xem. Giáo viên bấm "Bắt đầu đếm giờ" để cả lớp trả lời miệng hoặc ghi ra bảng con trong thời gian đếm ngược, rồi bấm "Dừng & Hiện đáp án" (hoặc chờ hết giờ) để lộ đáp án đúng. Bấm "Câu tiếp theo" để tiếp tục.</div>
+
+      <div class="tnd-progress" id="qProgress">Câu 1/0</div>
+
+      <div class="game-panel">
+        <div class="tnd-timer-wrap">
+          <div class="tnd-ring">
+            <svg viewBox="0 0 150 150">
+              <circle class="bg" cx="75" cy="75" r="66"></circle>
+              <circle class="fg" id="ringFg" cx="75" cy="75" r="66"></circle>
+            </svg>
+            <div class="tnd-ring-num" id="ringNum">15</div>
+          </div>
+        </div>
+
+        <div class="tnd-question" id="questionText"></div>
+        <div class="tnd-options" id="optionsGrid"></div>
+
+        <div class="tnd-controls">
+          <button class="btn btn-primary btn-lg" id="startTimerBtn">⏱️ Bắt đầu đếm giờ</button>
+          <button class="btn btn-danger btn-lg hidden" id="stopRevealBtn">⏹️ Dừng &amp; Hiện đáp án</button>
+          <button class="btn btn-outline btn-lg hidden" id="nextBtn">➡️ Câu tiếp theo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Số giây đếm ngược mỗi câu</label>
+        <input type="number" id="secondsInput" min="3" max="120" value="15">
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

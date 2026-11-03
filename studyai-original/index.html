@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAI — Trò chơi dạy học &amp; Công cụ tương tác cho giáo viên</title>
+<meta name="description" content="StudyAI — 48 trò chơi &amp; công cụ dạy học tương tác: vòng quay, kéo co, chém hoa quả, dò mìn, gameshow lớp học, ghép nối, sơ đồ tư duy và nhiều hơn nữa. Không cần đăng nhập, dùng ngay miễn phí.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .filter-bar {
+    position: sticky; top: 68px; z-index: 40;
+    background: rgba(248,250,252,0.94); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--ink-100);
+    padding: 14px 0;
+  }
+  .filter-bar .container { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .search-input-wrap { position: relative; flex: 1; min-width: 220px; max-width: 340px; }
+  .search-input-wrap input {
+    width: 100%; padding: 10px 14px 10px 36px; border-radius: 999px;
+    border: 1.5px solid var(--ink-300); font-size: 0.88rem;
+  }
+  .search-input-wrap::before {
+    content: "🔍"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 0.85rem; opacity: 0.6;
+  }
+  .cat-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cat-pill {
+    padding: 8px 14px; border-radius: 999px; background: var(--ink-100); color: var(--ink-700);
+    font-weight: 700; font-size: 0.8rem; white-space: nowrap; border: 1px solid transparent;
+  }
+  .cat-pill:hover { background: var(--ink-300); }
+  .cat-section { padding: 44px 0; scroll-margin-top: 130px; }
+  .cat-section:nth-child(even) { background: var(--surface); }
+  .cat-head { margin-bottom: 26px; }
+  .cat-head .cat-emoji { font-size: 1.6rem; margin-right: 8px; }
+  .cat-head h2 { display: inline; font-size: 1.4rem; font-weight: 800; vertical-align: middle; }
+  .cat-head p { color: var(--ink-500); margin-top: 8px; font-size: 0.92rem; max-width: 640px; }
+  .cat-count {
+    display: inline-block; margin-left: 10px; background: var(--ink-100); color: var(--ink-500);
+    font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; vertical-align: middle;
+  }
+  .game-card.js-hidden { display: none !important; }
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--ink-500); }
+  .no-results.show { display: block; }
+  .stat-badge-total {
+    display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25); padding: 6px 16px; border-radius: 999px;
+    font-size: 0.8rem; font-weight: 700; margin-bottom: 18px;
+  }
+</style>
+</head>
+<body>
+
+<div class="author-bar" style="background:linear-gradient(90deg,#4f46e5,#7c3aed,#db2777);color:#fff;text-align:center;font-size:.86rem;line-height:1.45;padding:8px 16px;font-weight:600;letter-spacing:.1px;">
+  🎓 Thiết kế và chia sẻ cùng giáo viên: <strong style="font-weight:800;">PGS.TS Lê Thanh Huy</strong> - Giảng viên Trường Đại học Sư phạm - Đại học Đà Nẵng
+</div>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">🎓</span>
+      <span>StudyAI<small>Học liệu số cho giáo viên</small></span>
+    </a>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link active">Trang chủ</a>
+      <a href="#games" class="nav-link">Trò chơi</a>
+      <a href="#about" class="nav-link">Giới thiệu</a>
+      <a href="#faq" class="nav-link">Hướng dẫn</a>
+    </nav>
+    <div class="header-actions">
+      <a href="#games" class="btn btn-primary">Bắt đầu ngay</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <span class="hero-eyebrow">✨ Miễn phí • Không cần đăng nhập • Dùng ngay trên trình duyệt</span>
+    <h1>Biến mỗi giờ học thành <span>một trò chơi</span></h1>
+    <p class="lead">Bộ sưu tập 48 trò chơi &amp; công cụ dạy học tương tác dành cho giáo viên mọi cấp học — tự soạn nội dung, chiếu lên màn hình và để học sinh cùng tham gia trong vài giây.</p>
+    <div class="hero-actions">
+      <a href="#games" class="btn btn-primary btn-lg">🎮 Khám phá trò chơi</a>
+      <a href="#about" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,.4); color:#fff;">Tìm hiểu thêm</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>48</b><span>trò chơi &amp; công cụ</span></div>
+      <div class="hero-stat"><b>0đ</b><span>chi phí sử dụng</span></div>
+      <div class="hero-stat"><b>100%</b><span>chạy ngay trên trình duyệt</span></div>
+      <div class="hero-stat"><b>~30s</b><span>để tạo một bộ câu hỏi</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="filter-bar" id="games">
+  <div class="container">
+    <div class="search-input-wrap">
+      <input type="text" id="gameSearch" placeholder="Tìm trò chơi theo tên...">
+    </div>
+    <div class="cat-pills">
+      <a href="#cat-classic" class="cat-pill">🎡 Cổ điển</a>
+      <a href="#cat-arcade" class="cat-pill">🕹️ Mini game</a>
+      <a href="#cat-strategy" class="cat-pill">♟️ Chiến thuật</a>
+      <a href="#cat-match" class="cat-pill">🧩 Ghép nối</a>
+      <a href="#cat-gameshow" class="cat-pill">🏆 Gameshow</a>
+      <a href="#cat-builder" class="cat-pill">🛠️ Công cụ</a>
+      <a href="#cat-sensor" class="cat-pill">📷 Cảm biến vui</a>
+    </div>
+  </div>
+</div>
+
+<div id="noResults" class="no-results container">
+  <div style="font-size:2.4rem; margin-bottom:10px;">🔍</div>
+  <p>Không tìm thấy trò chơi nào khớp với từ khoá.</p>
+</div>
+
+<section class="cat-section" id="cat-classic">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">🎡</span><h2>Cổ điển &amp; chọn ngẫu nhiên</h2><span class="cat-count">5 trò chơi</span>
+      <p>Những trò chơi quen thuộc để gọi tên học sinh và khởi động tiết học đầy hào hứng.</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="vòng quay may mắn">
+        <span class="game-icon gi-1">🎡</span>
+        <h3>Vòng Quay May Mắn</h3>
+        <p>Quay vòng quay để chọn ngẫu nhiên học sinh trả lời câu hỏi trắc nghiệm — vui nhộn và công bằng.</p>
+        <a href="games/vong-quay/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đua vịt">
+        <span class="game-icon gi-3">🦆</span>
+        <h3>Đua Vịt</h3>
+        <p>Những chú vịt bơi đua trên sông — vịt về đích đầu tiên sẽ đại diện trả lời câu hỏi.</p>
+        <a href="games/dua-vit/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="kéo co tri thức">
+        <span class="game-icon gi-2">🪢</span>
+        <h3>Kéo Co Tri Thức</h3>
+        <p>Hai đội thi trả lời câu hỏi, mỗi câu đúng sẽ kéo được sợi dây về phía đội mình.</p>
+        <a href="games/keo-co/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đua ngôi sao">
+        <span class="game-icon gi-5">⭐</span>
+        <h3>Đua Ngôi Sao</h3>
+        <p>Hai đội đua trên đường đua, trả lời đúng để tiến về đích trước đối thủ.</p>
+        <a href="games/dua-ngoi-sao/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="ống kính may mắn">
+        <span class="game-icon gi-4">📸</span>
+        <h3>Ống Kính May Mắn</h3>
+        <p>Camera trang trí vui nhộn kết hợp chọn ngẫu nhiên học sinh trả lời câu hỏi.</p>
+        <a href="games/ong-kinh-may-man/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cat-section" id="cat-arcade">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">🕹️</span><h2>Mini game phản xạ</h2><span class="cat-count">9 trò chơi</span>
+      <p>Trò chơi hành động nhanh, hoạt hình sinh động — trả lời trước khi hết giờ!</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="chém hoa quả tri thức">
+        <span class="game-icon gi-3">🍉</span>
+        <h3>Chém Hoa Quả Tri Thức</h3>
+        <p>Đáp án bay dạng hoa quả — nhấn/chạm để "chém" đáp án đúng trước khi hết giờ.</p>
+        <a href="games/chem-hoa-qua/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="dò mìn tri thức">
+        <span class="game-icon gi-4">💣</span>
+        <h3>Dò Mìn Tri Thức</h3>
+        <p>Chọn ô chứa đáp án đúng để vượt qua bãi mìn — 3 mạng, bước nhầm là nổ tung.</p>
+        <a href="games/do-min/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đập chuột tri thức">
+        <span class="game-icon gi-6">🐹</span>
+        <h3>Đập Chuột Tri Thức</h3>
+        <p>Chuột mang đáp án bất ngờ thò lên khỏi hang — đập đúng chuột trước khi nó lẩn mất.</p>
+        <a href="games/dap-chuot/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="bóng rổ tri thức">
+        <span class="game-icon gi-2">🏀</span>
+        <h3>Bóng Rổ Tri Thức</h3>
+        <p>Ném bóng vào rổ mang đáp án đúng — swish ăn điểm, trượt thì lộ đáp án.</p>
+        <a href="games/bong-ro/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="ném phi tiêu tri thức">
+        <span class="game-icon gi-8">🎯</span>
+        <h3>Ném Phi Tiêu Tri Thức</h3>
+        <p>Ném phi tiêu trúng vùng chứa đáp án đúng trên bảng phi tiêu đầy màu sắc.</p>
+        <a href="games/phi-tieu/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="câu cá tri thức">
+        <span class="game-icon gi-7">🎣</span>
+        <h3>Câu Cá Tri Thức</h3>
+        <p>Đàn cá tung tăng bơi qua màn hình — câu đúng con cá mang đáp án chính xác.</p>
+        <a href="games/cau-ca/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="bong bóng xà phòng">
+        <span class="game-icon gi-1">🫧</span>
+        <h3>Bong Bóng Xà Phòng</h3>
+        <p>Bong bóng mang đáp án bay lên — chạm vỡ đúng bong bóng trước khi chúng bay mất.</p>
+        <a href="games/bong-bong/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="từ ngữ biết bay">
+        <span class="game-icon gi-5">🕊️</span>
+        <h3>Từ Ngữ Biết Bay</h3>
+        <p>Bắt từ đang bay để hoàn thành câu hoặc ghép từ có nghĩa chính xác.</p>
+        <a href="games/tu-ngu-biet-bay/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="slot may mắn">
+        <span class="game-icon gi-6">🎰</span>
+        <h3>Slot May Mắn</h3>
+        <p>Quay máy xèng may mắn, chọn đúng ô đáp án để trúng thưởng "Jackpot"!</p>
+        <a href="games/slot-may-man/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cat-section" id="cat-strategy">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">♟️</span><h2>Chiến thuật &amp; nhiều người chơi</h2><span class="cat-count">9 trò chơi</span>
+      <p>Trò chơi theo lượt, đấu đội hoặc cả lớp cùng vượt thử thách dài hơi.</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="game theo lượt">
+        <span class="game-icon gi-2">🎲</span>
+        <h3>Game Theo Lượt</h3>
+        <p>Tung xúc xắc, di chuyển quân cờ qua bàn cờ — trả lời đúng để tiến bước, chơi 2-4 người.</p>
+        <a href="games/game-theo-luot/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="mê cung tri thức">
+        <span class="game-icon gi-3">🧭</span>
+        <h3>Mê Cung Tri Thức</h3>
+        <p>Trả lời đúng để mở đường, dẫn lối nhân vật vượt mê cung tìm đến đích.</p>
+        <a href="games/me-cung/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="bingo tri thức">
+        <span class="game-icon gi-4">🎫</span>
+        <h3>Bingo Tri Thức</h3>
+        <p>Gọi từ khoá ngẫu nhiên, cả lớp cùng đánh dấu bảng Bingo — đủ hàng là chiến thắng!</p>
+        <a href="games/bingo/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đối kháng">
+        <span class="game-icon gi-8">⚔️</span>
+        <h3>Đối Kháng</h3>
+        <p>Đối đầu 1v1 cùng thiết bị — trả lời đúng để tung đòn, hạ gục thanh máu đối thủ.</p>
+        <a href="games/doi-khang/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đấu giá tri thức">
+        <span class="game-icon gi-6">💰</span>
+        <h3>Đấu Giá Tri Thức</h3>
+        <p>Đặt cược điểm số theo mức độ tự tin trước khi trả lời — mạo hiểm càng cao, thưởng càng lớn.</p>
+        <a href="games/dau-gia/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="leo núi tri thức">
+        <span class="game-icon gi-7">🏔️</span>
+        <h3>Leo Núi Tri Thức</h3>
+        <p>Cả lớp cùng chinh phục đỉnh núi — mỗi câu đúng là một bước tiến gần đỉnh hơn.</p>
+        <a href="games/leo-nui/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="giải cứu khinh khí cầu">
+        <span class="game-icon gi-1">🎈</span>
+        <h3>Giải Cứu Khinh Khí Cầu</h3>
+        <p>Trả lời đúng để thả bao cát, giúp khinh khí cầu thoát khỏi cơn bão đang đuổi theo.</p>
+        <a href="games/khinh-khi-cau/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="xây tháp tri thức">
+        <span class="game-icon gi-5">🏗️</span>
+        <h3>Xây Tháp Tri Thức</h3>
+        <p>Mỗi câu đúng xây thêm một tầng tháp — trả lời sai liên tiếp khiến tháp lung lay!</p>
+        <a href="games/xay-thap/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đèn giao thông tri thức">
+        <span class="game-icon gi-2">🚦</span>
+        <h3>Đèn Giao Thông Tri Thức</h3>
+        <p>Nhận định Đúng/Sai thật nhanh trước khi đèn chuyển sang đỏ!</p>
+        <a href="games/den-giao-thong/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cat-section" id="cat-match">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">🧩</span><h2>Ghép nối, sắp xếp &amp; giải đố</h2><span class="cat-count">12 trò chơi</span>
+      <p>Rèn tư duy logic qua các trò chơi ghép cặp, kéo-thả và giải mã.</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="thẻ lật ghi nhớ">
+        <span class="game-icon gi-6">🃏</span>
+        <h3>Thẻ Lật Ghi Nhớ</h3>
+        <p>Tạo bộ thẻ ghi nhớ, lật thẻ để ôn bài, tự đánh giá đã thuộc hay chưa.</p>
+        <a href="games/the-lat/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="đoàn tàu tri thức">
+        <span class="game-icon gi-8">🚂</span>
+        <h3>Đoàn Tàu Tri Thức</h3>
+        <p>Kéo thả các toa tàu để nối đáp án với câu hỏi, xếp thành đoàn tàu đúng thứ tự.</p>
+        <a href="games/doan-tau/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="ghép cặp trí nhớ">
+        <span class="game-icon gi-4">🧠</span>
+        <h3>Ghép Cặp Trí Nhớ</h3>
+        <p>Lật 2 thẻ mỗi lượt để tìm cặp tương ứng — trò chơi trí nhớ kinh điển.</p>
+        <a href="games/ghep-cap/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="sắp xếp dòng thời gian">
+        <span class="game-icon gi-2">⏳</span>
+        <h3>Sắp Xếp Dòng Thời Gian</h3>
+        <p>Kéo thả các sự kiện vào đúng trình tự thời gian hoặc logic.</p>
+        <a href="games/dong-thoi-gian/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="kéo thả nối ý">
+        <span class="game-icon gi-3">🧩</span>
+        <h3>Kéo Thả Nối Ý</h3>
+        <p>Kéo thả khái niệm vào đúng định nghĩa tương ứng trên bảng ghép ý.</p>
+        <a href="games/keo-tha-noi-y/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="xếp hình tri thức">
+        <span class="game-icon gi-5">🚀</span>
+        <h3>Xếp Hình Tri Thức</h3>
+        <p>Mỗi câu trả lời đúng ghép thêm một mảnh — hoàn thành bức tranh bí ẩn.</p>
+        <a href="games/xep-hinh/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="lật mảnh ghép">
+        <span class="game-icon gi-7">🖼️</span>
+        <h3>Lật Mảnh Ghép</h3>
+        <p>Trả lời đúng để lật mở từng ô, dần hé lộ hình ảnh bí mật phía sau.</p>
+        <a href="games/lat-manh-ghep/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="ô chữ tri thức">
+        <span class="game-icon gi-1">🔤</span>
+        <h3>Ô Chữ Tri Thức</h3>
+        <p>Tìm từ khoá ẩn trong bảng chữ cái từ danh sách từ vựng của giáo viên.</p>
+        <a href="games/o-chu/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="bản đồ địa lý">
+        <span class="game-icon gi-6">🗺️</span>
+        <h3>Bản Đồ Địa Lý</h3>
+        <p>Chấm đúng khu vực trên bản đồ cách điệu để trả lời câu hỏi địa lý.</p>
+        <a href="games/ban-do-dia-ly/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="gõ phím tốc độ">
+        <span class="game-icon gi-8">⌨️</span>
+        <h3>Gõ Phím Tốc Độ</h3>
+        <p>Gõ thật nhanh và chính xác đáp án để lập kỷ lục thời gian của lớp.</p>
+        <a href="games/go-phim-toc-do/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="khóa bí mật">
+        <span class="game-icon gi-2">🔐</span>
+        <h3>Khóa Bí Mật</h3>
+        <p>Mỗi câu trả lời đúng hé lộ một ký tự — giải mã trọn vẹn ổ khoá bí mật.</p>
+        <a href="games/khoa-bi-mat/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="săn kho báu">
+        <span class="game-icon gi-4">💎</span>
+        <h3>Săn Kho Báu</h3>
+        <p>Thu thập chữ cái từ mỗi câu trả lời đúng để giải mã từ khoá kho báu.</p>
+        <a href="games/san-kho-bau/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cat-section" id="cat-gameshow">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">🏆</span><h2>Gameshow lớp học</h2><span class="cat-count">3 trò chơi</span>
+      <p>Phong cách truyền hình quen thuộc, mang không khí gameshow vào lớp học.</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="rung chuông vàng">
+        <span class="game-icon gi-3">🔔</span>
+        <h3>Rung Chuông Vàng</h3>
+        <p>Thử thách loại trực tiếp cho cả lớp — ai trụ lại đến câu cuối cùng sẽ "rung chuông vàng".</p>
+        <a href="games/rung-chuong-vang/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="ai là triệu phú">
+        <span class="game-icon gi-6">🪜</span>
+        <h3>Ai Là Triệu Phú</h3>
+        <p>Leo từng bậc thang câu hỏi với 3 quyền trợ giúp: 50:50, gọi điện, hỏi ý kiến khán giả.</p>
+        <a href="games/ai-la-trieu-phu/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="trắc nghiệm theo nhịp độ">
+        <span class="game-icon gi-5">⏱️</span>
+        <h3>Trắc Nghiệm Theo Nhịp Độ</h3>
+        <p>Giáo viên điều khiển nhịp độ, đếm giờ lớn trên màn chiếu cho cả lớp cùng theo dõi.</p>
+        <a href="games/trac-nghiem-nhip-do/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cat-section" id="cat-builder">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">🛠️</span><h2>Công cụ sáng tạo bài học</h2><span class="cat-count">6 công cụ</span>
+      <p>Xây dựng nội dung tương tác riêng: sơ đồ, hình ảnh, video, hành trình học tập và prompt video AI.</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="sơ đồ tư duy">
+        <span class="game-icon gi-7">🧠</span>
+        <h3>Sơ Đồ Tư Duy</h3>
+        <p>Giáo viên dựng khung sơ đồ, học sinh cùng mở dần các nhánh để hoàn thiện.</p>
+        <a href="games/so-do-tu-duy/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="ảnh tương tác">
+        <span class="game-icon gi-8">🖱️</span>
+        <h3>Ảnh Tương Tác</h3>
+        <p>Đặt các điểm chạm lên hình minh hoạ, mỗi điểm ẩn chứa một câu hỏi nhỏ.</p>
+        <a href="games/anh-tuong-tac/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="video tương tác">
+        <span class="game-icon gi-1">▶️</span>
+        <h3>Video Tương Tác</h3>
+        <p>Chèn câu hỏi trắc nghiệm xuất hiện đúng thời điểm trong video bài giảng.</p>
+        <a href="games/video-tuong-tac/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="hành trình học tập">
+        <span class="game-icon gi-2">🗺️</span>
+        <h3>Hành Trình Học Tập</h3>
+        <p>Thiết kế hành trình nhiều chặng, mở khoá chặng mới sau khi hoàn thành chặng trước.</p>
+        <a href="games/hanh-trinh-hoc-tap/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="game tự tạo">
+        <span class="game-icon gi-4">🕹️</span>
+        <h3>Game Tự Tạo</h3>
+        <p>Dán đoạn mã HTML trò chơi tự soạn, giao cho học sinh chơi ngay — không cần lập trình.</p>
+        <a href="games/game-tu-tao/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="bàn dựng prompt video ai talking head google flow zoom">
+        <span class="game-icon gi-5">🎬</span>
+        <h3>Bàn Dựng Prompt Video AI <span style="display:inline-block;vertical-align:middle;margin-left:4px;background:#f59e0b;color:#1f1300;font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:999px;">MỚI</span></h3>
+        <p>Gõ lời thoại, chọn giọng đọc, từ khoá hot kèm icon 3D và cú máy siêu zoom — nhận ngay prompt talking head cho Google Flow.</p>
+        <a href="prompt/" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cat-section" id="cat-sensor">
+  <div class="container">
+    <div class="cat-head">
+      <span class="cat-emoji">📷</span><h2>Camera &amp; cảm biến vui</h2><span class="cat-count">4 trò chơi</span>
+      <p>Tận dụng cảm biến nghiêng, micro và camera trang trí để lớp học thêm sôi động — hoạt động tốt kể cả khi không có/không cấp quyền thiết bị.</p>
+    </div>
+    <div class="game-grid">
+
+      <div class="game-card" data-name="quiz nghiêng đầu">
+        <span class="game-icon gi-6">📱</span>
+        <h3>Quiz Nghiêng Đầu</h3>
+        <p>Nghiêng thiết bị trái/phải để chọn đáp án — hoặc chạm chọn nếu không có cảm biến.</p>
+        <a href="games/quiz-nghieng-dau/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="thể dục abc">
+        <span class="game-icon gi-3">🤸</span>
+        <h3>Thể Dục ABC</h3>
+        <p>Làm động tác minh hoạ tương ứng A/B/C rồi bấm chọn đáp án đúng thật nhanh.</p>
+        <a href="games/the-duc-abc/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="chế độ giấy">
+        <span class="game-icon gi-5">🗳️</span>
+        <h3>Chế Độ Giấy</h3>
+        <p>Học sinh giơ thẻ giấy A/B/C/D, giáo viên kiểm đếm nhanh và xem biểu đồ kết quả.</p>
+        <a href="games/che-do-giay/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+      <div class="game-card" data-name="rồng ngủ quản lý lớp">
+        <span class="game-icon gi-8">🐉</span>
+        <h3>Rồng Ngủ - Quản Lý Lớp</h3>
+        <p>Chú rồng ngủ yên khi lớp trật tự, thức giấc giận dữ nếu lớp quá ồn ào.</p>
+        <a href="games/rong-ngu/index.html" class="btn btn-primary">Bắt đầu →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about" style="background:var(--surface-soft);">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">Vì sao chọn StudyAI</span>
+      <h2>Đơn giản cho giáo viên, hào hứng cho học sinh</h2>
+    </div>
+    <div class="game-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+      <div class="game-card">
+        <span class="game-icon gi-3">⚡</span>
+        <h3>Không cần cài đặt</h3>
+        <p>Mở trình duyệt là chơi được ngay — trên máy tính, máy chiếu hay điện thoại đều mượt mà.</p>
+      </div>
+      <div class="game-card">
+        <span class="game-icon gi-1">✏️</span>
+        <h3>Tự soạn nội dung trong 1 phút</h3>
+        <p>Chỉ cần gõ câu hỏi/dữ liệu theo mẫu có sẵn, hệ thống tự tạo trò chơi hoàn chỉnh.</p>
+      </div>
+      <div class="game-card">
+        <span class="game-icon gi-2">🔒</span>
+        <h3>Riêng tư, không cần tài khoản</h3>
+        <p>Dữ liệu được lưu ngay trên trình duyệt của bạn, không gửi lên máy chủ nào khác.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">Hướng dẫn nhanh</span>
+      <h2>Bắt đầu chỉ với 3 bước</h2>
+    </div>
+    <div class="game-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+      <div class="game-card">
+        <span class="game-icon gi-6">1️⃣</span>
+        <h3>Chọn trò chơi</h3>
+        <p>Dùng thanh tìm kiếm hoặc danh mục phía trên để chọn trò chơi phù hợp với bài học.</p>
+      </div>
+      <div class="game-card">
+        <span class="game-icon gi-7">2️⃣</span>
+        <h3>Soạn nội dung</h3>
+        <p>Bấm nút "Soạn câu hỏi" (hoặc tương đương) trong trò chơi, nhập nội dung theo mẫu, bấm Lưu.</p>
+      </div>
+      <div class="game-card">
+        <span class="game-icon gi-8">3️⃣</span>
+        <h3>Chiếu và chơi cùng lớp</h3>
+        <p>Chiếu màn hình lên máy chiếu/tivi và bắt đầu — học sinh trả lời trực tiếp hoặc qua giáo viên.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>🎓 StudyAI</h4>
+        <p style="font-size:.88rem; line-height:1.6;">Bộ sưu tập 48 trò chơi &amp; công cụ dạy học tương tác miễn phí dành cho giáo viên Việt Nam.</p>
+        <p style="font-size:.82rem; line-height:1.6; margin-top:10px; opacity:.85;">Cố vấn chuyên môn:<br><strong>PGS.TS Lê Thanh Huy</strong><br>Trường Đại học Sư phạm — Đại học Đà Nẵng</p>
+      </div>
+      <div>
+        <h4>Danh mục trò chơi</h4>
+        <ul>
+          <li><a href="#cat-classic">Cổ điển &amp; chọn ngẫu nhiên</a></li>
+          <li><a href="#cat-arcade">Mini game phản xạ</a></li>
+          <li><a href="#cat-strategy">Chiến thuật &amp; nhiều người chơi</a></li>
+          <li><a href="#cat-match">Ghép nối &amp; sắp xếp</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Thêm danh mục</h4>
+        <ul>
+          <li><a href="#cat-gameshow">Gameshow lớp học</a></li>
+          <li><a href="#cat-builder">Công cụ sáng tạo bài học</a></li>
+          <li><a href="#cat-sensor">Camera &amp; cảm biến vui</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 StudyAI · app.studyai.id.vn — Website đang trong giai đoạn phát triển ban đầu.
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var searchInput = document.getElementById('gameSearch');
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.game-card[data-name]'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.cat-section'));
+  var noResults = document.getElementById('noResults');
+
+  searchInput.addEventListener('input', function () {
+    var q = searchInput.value.trim().toLowerCase();
+    var anyVisible = false;
+    cards.forEach(function (card) {
+      var match = !q || card.getAttribute('data-name').indexOf(q) !== -1;
+      card.classList.toggle('js-hidden', !match);
+      if (match) anyVisible = true;
+    });
+    sections.forEach(function (sec) {
+      var visibleInSection = sec.querySelectorAll('.game-card[data-name]:not(.js-hidden)').length;
+      sec.style.display = (q && visibleInSection === 0) ? 'none' : '';
+    });
+    noResults.classList.toggle('show', q.length > 0 && !anyVisible);
+  });
+})();
+</script>
+
+</body>
+</html>

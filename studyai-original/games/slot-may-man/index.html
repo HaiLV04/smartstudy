@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slot May Mắn — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎰</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .slot-machine {
+    background: linear-gradient(160deg, #1e1b4b, #4c1d95);
+    border-radius: var(--radius-lg); padding: 26px 20px;
+    box-shadow: var(--shadow-lg); border: 4px solid #facc15;
+  }
+  .slot-reels { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .reel {
+    flex: 1 1 160px; max-width: 240px; min-height: 110px;
+    background: #fff; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 14px 12px; font-weight: 800; font-size: 1.05rem; color: var(--ink-900);
+    box-shadow: inset 0 0 0 4px #facc15, var(--shadow-md);
+    cursor: default; user-select: none; position: relative; overflow: hidden;
+  }
+  .reel.spinning { animation: reelBlur 0.09s linear infinite; color: var(--ink-500); }
+  @keyframes reelBlur { 0% { filter: blur(0px); } 50% { filter: blur(1.5px); } 100% { filter: blur(0px); } }
+  .reel.settled { animation: settleBounce 0.4s ease; cursor: pointer; }
+  .reel.settled:hover { box-shadow: inset 0 0 0 4px var(--brand-2), var(--shadow-lg); transform: translateY(-2px); }
+  @keyframes settleBounce { 0% { transform: scale(0.85); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  .reel.correct-pick { background: var(--success); color: #fff; box-shadow: inset 0 0 0 4px #16a34a; }
+  .reel.wrong-pick { background: var(--danger); color: #fff; box-shadow: inset 0 0 0 4px #b91c1c; }
+  .reel.disabled-reel { cursor: not-allowed; }
+  .slot-q-banner {
+    text-align: center; color: #fff; font-weight: 800; font-size: 1.05rem;
+    margin-bottom: 18px;
+  }
+  .slot-result { text-align: center; color: #facc15; font-weight: 800; font-size: 1.2rem; min-height: 1.6em; margin-top: 16px; }
+  .slot-footer { display: flex; justify-content: center; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎰 Slot May Mắn</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Đọc câu hỏi, bấm "🎰 Quay" để các ô quay hiện ra các đáp án khả thi. Khi các ô dừng lại, hãy bấm vào ô chứa đáp án bạn tin là đúng!</div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Điểm: <span id="score">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Câu hỏi: <span id="qProgress">0/0</span></div>
+      </div>
+
+      <div class="game-panel">
+        <div class="slot-q-banner" id="qBanner" style="color:var(--ink-900);">Bấm "Bắt đầu" để chơi</div>
+        <div class="slot-machine">
+          <div class="slot-reels" id="slotReels">
+            <div class="reel">❔</div>
+            <div class="reel">❔</div>
+            <div class="reel">❔</div>
+          </div>
+          <div class="slot-result" id="slotResult"></div>
+        </div>
+        <div class="slot-footer">
+          <button class="btn btn-primary btn-lg" id="startBtn">🎰 Bắt đầu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="9"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Mỗi lần quay sẽ hiện tối đa 4 ô (đáp án đúng + một số đáp án sai được chọn ngẫu nhiên).</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

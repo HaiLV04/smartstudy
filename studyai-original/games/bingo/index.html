@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .bingo-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .bingo-layout { grid-template-columns: 1fr; } }
+  .bingo-grid {
+    display: grid; gap: 8px; max-width: 480px; margin: 0 auto;
+  }
+  .bingo-cell {
+    aspect-ratio: 1; border-radius: var(--radius-sm); background: var(--surface);
+    border: 2px solid var(--ink-300); display: flex; align-items: center; justify-content: center;
+    text-align: center; font-weight: 700; font-size: 0.78rem; padding: 6px; color: var(--ink-900);
+    position: relative; line-height: 1.2;
+  }
+  .bingo-cell:hover { border-color: var(--brand-2); }
+  .bingo-cell.marked { background: linear-gradient(135deg,#0ea5a4,#2563eb); color: #fff; border-color: var(--brand-2); }
+  .bingo-cell.marked::after { content:"✔"; position:absolute; top:3px; right:6px; font-size:0.7rem; }
+  .bingo-cell.win-line { animation: winPulse 0.9s infinite; }
+  @keyframes winPulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(250,204,21,.7);} 50%{ box-shadow: 0 0 0 8px rgba(250,204,21,0);} }
+  .call-banner {
+    background: var(--ink-900); color: #fff; border-radius: var(--radius-lg); padding: 26px 18px;
+    text-align: center; margin-bottom: 16px;
+  }
+  .call-banner .label { font-size: 0.78rem; opacity: .7; font-weight: 700; letter-spacing: .04em; margin-bottom: 8px; }
+  .call-banner .term { font-size: 1.5rem; font-weight: 900; min-height: 1.6em; }
+  .called-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; max-height: 220px; overflow-y: auto; }
+  .called-chip { background: var(--ink-100); border-radius: 999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; color: var(--ink-700); }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎱 Bingo Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn danh sách từ</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Ván mới</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Giáo viên bấm "Gọi từ tiếp theo" để công bố từng từ khoá. Cả lớp cùng nhìn 1 bảng Bingo chung, ai thấy ô trùng với từ vừa gọi thì bấm vào ô đó để đánh dấu. Đánh dấu đủ 1 hàng ngang, cột dọc, hoặc đường chéo là thắng!</div>
+
+      <div class="bingo-layout">
+        <div class="game-panel">
+          <div class="bingo-grid" id="bingoGrid"></div>
+        </div>
+        <div class="game-panel">
+          <div class="call-banner">
+            <div class="label">TỪ VỪA GỌI</div>
+            <div class="term" id="currentTerm">—</div>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block" id="callBtn">🔔 Gọi từ tiếp theo</button>
+          <div class="called-list" id="calledList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn danh sách từ khoá</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách từ/thuật ngữ (mỗi dòng 1 từ, cần tối thiểu 16 từ)</label>
+        <textarea id="termsInput" rows="12"></textarea>
+        <p class="field-hint">Cần ít nhất 16 từ để tạo bảng 4x4. Nếu nhập từ 25 từ trở lên, bảng sẽ tự động là 5x5.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

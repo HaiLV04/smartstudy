@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xếp Hình Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .xh-wrap { display: grid; grid-template-columns: 260px 1fr; gap: 30px; align-items: start; }
+  @media (max-width: 760px) { .xh-wrap { grid-template-columns: 1fr; } }
+
+  .rocket-stage {
+    position: relative; width: 240px; height: 300px; margin: 10px auto;
+    background: radial-gradient(circle at 50% 30%, #0f2447, #060d1e 75%);
+    border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md);
+  }
+  .rocket-piece { position: absolute; opacity: 0; transform: scale(.4); transition: opacity .55s ease, transform .55s cubic-bezier(.34,1.56,.64,1); }
+  .rocket-piece.revealed { opacity: 1; transform: scale(1); }
+
+  .p-body { top: 90px; left: 80px; width: 80px; height: 150px; border-radius: 40px 40px 10px 10px; background: linear-gradient(135deg,#e2e8f0,#94a3b8); z-index: 3; }
+  .p-finL { top: 195px; left: 46px; width: 40px; height: 60px; background: linear-gradient(135deg,#2563eb,#1e3a8a); clip-path: polygon(100% 0%, 100% 100%, 0% 100%); z-index: 2; }
+  .p-finR { top: 195px; left: 154px; width: 40px; height: 60px; background: linear-gradient(135deg,#2563eb,#1e3a8a); clip-path: polygon(0% 0%, 0% 100%, 100% 100%); z-index: 2; }
+  .p-stripe { top: 175px; left: 80px; width: 80px; height: 16px; background: linear-gradient(90deg,#f97316,#facc15); z-index: 4; }
+  .p-window { top: 118px; left: 100px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #e0f2fe, #38bdf8 70%); border: 4px solid #e2e8f0; z-index: 5; }
+  .p-nose { top: 40px; left: 80px; width: 80px; height: 55px; background: linear-gradient(135deg,#f97316,#dc2626); clip-path: polygon(50% 0%, 100% 100%, 0% 100%); border-radius: 6px 6px 0 0; z-index: 3; }
+  .p-flame { top: 238px; left: 92px; width: 56px; height: 55px; background: linear-gradient(180deg,#facc15,#f97316 60%,#ef4444); clip-path: polygon(50% 100%, 0% 15%, 50% 40%, 100% 15%); z-index: 1; }
+  .p-sparkles { top: 0; left: 0; width: 100%; height: 100%; font-size: 1.1rem; z-index: 6; }
+  .p-sparkles span { position: absolute; }
+  .p-sparkles span:nth-child(1) { top: 20px; left: 30px; }
+  .p-sparkles span:nth-child(2) { top: 60px; left: 190px; font-size: .8rem; }
+  .p-sparkles span:nth-child(3) { top: 140px; left: 20px; font-size: .9rem; }
+  .p-sparkles span:nth-child(4) { top: 260px; left: 170px; font-size: .8rem; }
+
+  .xh-progress { text-align: center; font-weight: 700; color: var(--ink-500); font-size: .88rem; margin-top: 12px; }
+  .xh-result { text-align: center; padding: 10px; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🚀 Xếp Hình Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Trả lời đúng mỗi câu hỏi để lắp thêm 1 mảnh ghép vào bức tranh tên lửa. Trả lời sai không mất mảnh đã ráp — chỉ chuyển sang câu tiếp theo. Ráp đủ mảnh để hoàn thành bức tranh!</div>
+
+      <div class="game-panel">
+        <div class="xh-wrap">
+          <div>
+            <div class="rocket-stage" id="rocketStage">
+              <div class="rocket-piece p-flame" data-piece="flame"></div>
+              <div class="rocket-piece p-finL" data-piece="finL"></div>
+              <div class="rocket-piece p-finR" data-piece="finR"></div>
+              <div class="rocket-piece p-body" data-piece="body"></div>
+              <div class="rocket-piece p-stripe" data-piece="stripe"></div>
+              <div class="rocket-piece p-window" data-piece="window"></div>
+              <div class="rocket-piece p-nose" data-piece="nose"></div>
+              <div class="rocket-piece p-sparkles" data-piece="sparkles">
+                <span>✨</span><span>⭐</span><span>✨</span><span>⭐</span>
+              </div>
+            </div>
+            <div class="xh-progress">Đã ráp: <span id="pieceCount">0</span>/<span id="pieceTotal">8</span> mảnh</div>
+          </div>
+          <div id="questionArea"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi trắc nghiệm</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Nên có ít nhất 8 câu để đủ ráp hết 8 mảnh ghép.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

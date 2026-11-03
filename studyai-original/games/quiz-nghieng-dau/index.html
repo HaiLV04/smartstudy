@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Nghiêng Đầu — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .tilt-zones { display: grid; grid-template-columns: 1fr 200px 1fr; gap: 16px; align-items: stretch; margin-top: 18px; }
+  @media (max-width: 760px) { .tilt-zones { grid-template-columns: 1fr; } }
+  .tilt-zone {
+    background: var(--surface-soft); border: 2.5px solid var(--ink-300); border-radius: var(--radius-md);
+    padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; cursor: pointer; text-align: center; min-height: 150px; transition: all .15s;
+  }
+  .tilt-zone:hover:not(.disabled) { border-color: var(--brand-2); background: #eef4ff; transform: translateY(-2px); }
+  .tilt-zone .side-label { font-size: 1.3rem; font-weight: 800; color: var(--ink-500); }
+  .tilt-zone .opt-text { font-size: 1.1rem; font-weight: 700; color: var(--ink-900); }
+  .tilt-zone.correct { border-color: var(--success); background: #f0fdf4; }
+  .tilt-zone.wrong { border-color: var(--danger); background: #fef2f2; }
+  .tilt-zone.disabled { cursor: not-allowed; }
+
+  .tilt-indicator-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+  .tilt-track {
+    position: relative; width: 100%; max-width: 180px; height: 60px;
+    background: linear-gradient(90deg, #dbeafe, #f8fafc, #fee2e2);
+    border-radius: 30px; border: 2px solid var(--ink-300); overflow: visible;
+  }
+  .tilt-ball {
+    position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+    transition: transform .08s linear;
+    will-change: transform;
+  }
+  .tilt-status { font-size: 0.78rem; color: var(--ink-500); text-align: center; }
+  .tilt-enable-btn { font-size: 0.82rem; padding: 8px 14px; }
+
+  .qhq-question { text-align: center; font-size: 1.2rem; font-weight: 800; color: var(--ink-900); margin-bottom: 6px; }
+  .qhq-progress { text-align: center; color: var(--ink-500); font-size: .85rem; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">📱 Quiz Nghiêng Đầu</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">
+        💡 Nghiêng điện thoại/máy tính bảng sang trái hoặc phải để chọn đáp án — bấm nút "📱 Bật cảm biến nghiêng" trước (chỉ hoạt động trên thiết bị có cảm biến, ví dụ điện thoại). Trên máy tính hoặc khi chưa bật cảm biến, bạn vẫn chơi được bình thường bằng cách <b>bấm trực tiếp</b> vào ô "⬅️ Trái" hoặc "➡️ Phải".
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Điểm: <span id="scoreVal">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Câu hỏi: <span id="qProgress">0/0</span></div>
+      </div>
+
+      <div class="game-panel">
+        <div style="text-align:center; margin-bottom: 10px;">
+          <button class="btn btn-outline tilt-enable-btn" id="enableTiltBtn">📱 Bật cảm biến nghiêng</button>
+          <div class="tilt-status" id="tiltStatus">Cảm biến: chưa bật (không bắt buộc)</div>
+        </div>
+
+        <div class="qhq-progress" id="qProgressLine"></div>
+        <div id="questionArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi (Đúng/Sai hoặc 2 lựa chọn)</label>
+        <textarea id="quizInput" rows="9"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai</b>. Game này chỉ dùng <b>đúng 2 đáp án</b> mỗi câu (trái/phải) — nếu bạn nhập thêm đáp án sai, chỉ 2 đáp án đầu tiên được sử dụng.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
