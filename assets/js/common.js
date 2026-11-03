@@ -74,8 +74,17 @@ const SA = (() => {
   }
 
   /* ---------- Modal helpers ---------- */
-  function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
-  function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+  function openModal(id) { 
+    var el = document.getElementById(id);
+    if (el) el.classList.remove("hidden");
+    if (window.initGrade1Selector) {
+      try { window.initGrade1Selector(); } catch(e) {}
+    }
+  }
+  function closeModal(id) { 
+    var el = document.getElementById(id);
+    if (el) el.classList.add("hidden"); 
+  }
 
   /* ---------- Tiện ích mảng ---------- */
   function shuffle(arr) {
@@ -149,155 +158,285 @@ const SA = (() => {
 })();
 
 
+
 /* ============================================================
-   Tự động gắn thanh "Nạp nhanh bộ đề Lớp 1 (Kết Nối Tri Thức)" vào ô soạn câu hỏi
+   BỘ CHỌN ĐỀ LỚP 1 THEO TUẦN (SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG)
+   Thiết kế chia riêng Môn Toán & Tiếng Việt, chọn tuần trực quan
    ============================================================ */
 document.addEventListener("DOMContentLoaded", function() {
   function initGrade1Selector() {
     var quizInput = document.getElementById("quizInput");
-    if (!quizInput || quizInput.dataset.hasGrade1Select) return;
-    quizInput.dataset.hasGrade1Select = "true";
+    if (!quizInput || quizInput.dataset.hasGrade1Picker) return;
+    quizInput.dataset.hasGrade1Picker = "true";
 
-    var wrap = document.createElement("div");
-    wrap.className = "grade1-quick-select";
-    wrap.style.cssText = "margin-bottom:12px; padding:12px 14px; background:#eff6ff; border:1.5px solid #38bdf8; border-radius:12px; display:flex; flex-direction:column; gap:8px; box-shadow:0 3px 6px rgba(14,165,233,0.08);";
+    var kntt = window.GRADE1_KNTT || { toan: [], tiengViet: [] };
 
-    // Top row with label & filter buttons
-    var topRow = document.createElement("div");
-    topRow.style.cssText = "display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;";
+    // Create main container box
+    var box = document.createElement("div");
+    box.className = "kntt-picker-box";
+    box.style.cssText = "margin-bottom:14px; padding:14px; background:#f8fafc; border:2px solid #38bdf8; border-radius:14px; display:flex; flex-direction:column; gap:10px; box-shadow:0 4px 12px rgba(14,165,233,0.1);";
 
-    var label = document.createElement("span");
-    label.style.cssText = "font-size:0.88rem; font-weight:800; color:#0369a1; display:flex; align-items:center; gap:6px;";
-    label.innerHTML = "⚡ Nạp đề Lớp 1 theo tuần (Sách Kết Nối Tri Thức):";
+    // 1. Subject Tabs (Toán vs Tiếng Việt)
+    var subTabs = document.createElement("div");
+    subTabs.style.cssText = "display:grid; grid-template-columns:1fr 1fr; gap:10px;";
 
-    var filterWrap = document.createElement("div");
-    filterWrap.style.cssText = "display:flex; gap:6px;";
-    filterWrap.innerHTML = 
-      '<button type="button" class="kntt-f-btn active" data-sub="all" style="padding:4px 10px; font-size:0.78rem; font-weight:700; border-radius:6px; border:1px solid #0284c7; background:#0284c7; color:#fff; cursor:pointer;">Tất cả</button>' +
-      '<button type="button" class="kntt-f-btn" data-sub="toan" style="padding:4px 10px; font-size:0.78rem; font-weight:700; border-radius:6px; border:1px solid #94a3b8; background:#fff; color:#334155; cursor:pointer;">📘 Toán (35 tuần)</button>' +
-      '<button type="button" class="kntt-f-btn" data-sub="tv" style="padding:4px 10px; font-size:0.78rem; font-weight:700; border-radius:6px; border:1px solid #94a3b8; background:#fff; color:#334155; cursor:pointer;">📕 Tiếng Việt (35 tuần)</button>';
+    var btnToan = document.createElement("button");
+    btnToan.type = "button";
+    btnToan.innerHTML = "📘 <b>MÔN TOÁN 1</b> <span style='font-size:0.75rem; opacity:0.9;'>(35 Tuần)</span>";
+    btnToan.style.cssText = "padding:10px 14px; border-radius:10px; border:2px solid #0284c7; background:#0284c7; color:#fff; font-size:0.92rem; font-weight:800; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px;";
 
-    topRow.appendChild(label);
-    topRow.appendChild(filterWrap);
+    var btnTV = document.createElement("button");
+    btnTV.type = "button";
+    btnTV.innerHTML = "📕 <b>TIẾNG VIỆT 1</b> <span style='font-size:0.75rem; opacity:0.9;'>(35 Tuần)</span>";
+    btnTV.style.cssText = "padding:10px 14px; border-radius:10px; border:2px solid #cbd5e1; background:#ffffff; color:#334155; font-size:0.92rem; font-weight:800; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px;";
 
-    // Dropdown select
-    var select = document.createElement("select");
-    select.style.cssText = "width:100%; padding:9px 12px; font-size:0.88rem; border-radius:8px; border:1.5px solid #0284c7; background:#fff; font-weight:700; color:#0f172a; cursor:pointer;";
+    subTabs.appendChild(btnToan);
+    subTabs.appendChild(btnTV);
 
-    function renderSelectOptions(filterSub) {
-      var html = '<option value="">-- Bấm vào đây để chọn Tuần học bạn muốn cho cả lớp chơi --</option>';
-      var kntt = window.GRADE1_KNTT || {};
+    // 2. Semester Bar (Học kì 1 vs Học kì 2)
+    var semBar = document.createElement("div");
+    semBar.style.cssText = "display:flex; gap:8px; align-items:center; background:#e2e8f0; padding:4px; border-radius:8px;";
 
-      if (filterSub === 'all' || filterSub === 'toan') {
-        if (kntt.toan) {
-          html += '<optgroup label="📘 TOÁN 1 — KẾT NỐI TRI THỨC (HỌC KÌ 1: TUẦN 1 - 18)">';
-          kntt.toan.filter(function(t) { return t.semester === 1; }).forEach(function(t) {
-            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
-          });
-          html += '</optgroup>';
+    var btnSem1 = document.createElement("button");
+    btnSem1.type = "button";
+    btnSem1.textContent = "📅 Học kì 1 (Tuần 1 đến 18)";
+    btnSem1.style.cssText = "flex:1; padding:7px; border-radius:6px; border:none; background:#ffffff; color:#0f172a; font-weight:800; font-size:0.82rem; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.1);";
 
-          html += '<optgroup label="📘 TOÁN 1 — KẾT NỐI TRI THỨC (HỌC KÌ 2: TUẦN 19 - 35)">';
-          kntt.toan.filter(function(t) { return t.semester === 2; }).forEach(function(t) {
-            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
-          });
-          html += '</optgroup>';
-        }
+    var btnSem2 = document.createElement("button");
+    btnSem2.type = "button";
+    btnSem2.textContent = "📅 Học kì 2 (Tuần 19 đến 35)";
+    btnSem2.style.cssText = "flex:1; padding:7px; border-radius:6px; border:none; background:transparent; color:#64748b; font-weight:700; font-size:0.82rem; cursor:pointer;";
+
+    semBar.appendChild(btnSem1);
+    semBar.appendChild(btnSem2);
+
+    // 3. Grid of Weeks buttons (Tuần 1 -> 18 hoặc 19 -> 35)
+    var gridLabel = document.createElement("div");
+    gridLabel.style.cssText = "font-size:0.8rem; font-weight:800; color:#475569; display:flex; justify-content:space-between; align-items:center;";
+    gridLabel.innerHTML = "<span>👉 Bấm vào số tuần để nạp nhanh đề:</span> <span id='knttCurrentSubjectHint' style='color:#0284c7; font-weight:900;'>MÔN TOÁN 1</span>";
+
+    var weeksGrid = document.createElement("div");
+    weeksGrid.style.cssText = "display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:6px;";
+
+    // 4. Selected Week Information Card
+    var infoCard = document.createElement("div");
+    infoCard.style.cssText = "background:#ffffff; border:1.5px solid #0284c7; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:6px; transition:all 0.2s;";
+
+    // State
+    var currentSub = "toan"; // "toan" or "tiengViet"
+    var currentSem = 1;      // 1 or 2
+    var selectedWeekObj = null;
+
+    function updateView() {
+      // Update Subject Tabs styling
+      if (currentSub === "toan") {
+        btnToan.style.background = "#0284c7";
+        btnToan.style.color = "#ffffff";
+        btnToan.style.borderColor = "#0284c7";
+        btnTV.style.background = "#ffffff";
+        btnTV.style.color = "#334155";
+        btnTV.style.borderColor = "#cbd5e1";
+        document.getElementById("knttCurrentSubjectHint").textContent = "MÔN TOÁN 1";
+        document.getElementById("knttCurrentSubjectHint").style.color = "#0284c7";
+        infoCard.style.borderColor = "#0284c7";
+      } else {
+        btnTV.style.background = "#dc2626";
+        btnTV.style.color = "#ffffff";
+        btnTV.style.borderColor = "#dc2626";
+        btnToan.style.background = "#ffffff";
+        btnToan.style.color = "#334155";
+        btnToan.style.borderColor = "#cbd5e1";
+        document.getElementById("knttCurrentSubjectHint").textContent = "MÔN TIẾNG VIỆT 1";
+        document.getElementById("knttCurrentSubjectHint").style.color = "#dc2626";
+        infoCard.style.borderColor = "#dc2626";
       }
 
-      if (filterSub === 'all' || filterSub === 'tv') {
-        if (kntt.tiengViet) {
-          html += '<optgroup label="📕 TIẾNG VIỆT 1 — KẾT NỐI TRI THỨC (HỌC KÌ 1: TUẦN 1 - 18)">';
-          kntt.tiengViet.filter(function(t) { return t.semester === 1; }).forEach(function(t) {
-            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
-          });
-          html += '</optgroup>';
-
-          html += '<optgroup label="📕 TIẾNG VIỆT 1 — KẾT NỐI TRI THỨC (HỌC KÌ 2: TUẦN 19 - 35)">';
-          kntt.tiengViet.filter(function(t) { return t.semester === 2; }).forEach(function(t) {
-            html += '<option value="' + t.id + '">' + t.title + ' (' + t.questions.length + ' câu)</option>';
-          });
-          html += '</optgroup>';
-        }
+      // Update Semester Bar styling
+      if (currentSem === 1) {
+        btnSem1.style.background = "#ffffff";
+        btnSem1.style.color = "#0f172a";
+        btnSem1.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+        btnSem2.style.background = "transparent";
+        btnSem2.style.color = "#64748b";
+        btnSem2.style.boxShadow = "none";
+      } else {
+        btnSem2.style.background = "#ffffff";
+        btnSem2.style.color = "#0f172a";
+        btnSem2.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+        btnSem1.style.background = "transparent";
+        btnSem1.style.color = "#64748b";
+        btnSem1.style.boxShadow = "none";
       }
 
-      // Add general thematic topics if all
-      if (filterSub === 'all' && window.GRADE1_QUESTIONS && Array.isArray(window.GRADE1_QUESTIONS)) {
-        html += '<optgroup label="🌟 CHUYÊN ĐỀ TỔNG HỢP (KHO CÂU HỎI MỞ RỘNG)">';
-        window.GRADE1_QUESTIONS.forEach(function(t) {
-          html += '<option value="' + t.id + '">' + t.icon + ' [' + t.subject + ' 1] ' + t.title + ' (' + t.questions.length + ' câu)</option>';
+      // Filter weeks list
+      var sourceList = currentSub === "toan" ? (kntt.toan || []) : (kntt.tiengViet || []);
+      var weeksInSem = sourceList.filter(function(w) { return w.semester === currentSem; });
+
+      // Render week buttons
+      weeksGrid.innerHTML = "";
+      weeksInSem.forEach(function(w) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "T." + w.week;
+        btn.title = w.title;
+
+        var isSelected = selectedWeekObj && selectedWeekObj.week === w.week && selectedWeekObj.subject === w.subject;
+        var activeColor = currentSub === "toan" ? "#0284c7" : "#dc2626";
+
+        if (isSelected) {
+          btn.style.cssText = "padding:8px 4px; border-radius:8px; border:2px solid " + activeColor + "; background:" + activeColor + "; color:#fff; font-weight:900; font-size:0.85rem; cursor:pointer; transform:scale(1.05); box-shadow:0 3px 6px rgba(0,0,0,0.15);";
+        } else {
+          btn.style.cssText = "padding:8px 4px; border-radius:8px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.1s;";
+          btn.onmouseenter = function() { btn.style.background = "#f1f5f9"; btn.style.borderColor = activeColor; };
+          btn.onmouseleave = function() { btn.style.background = "#ffffff"; btn.style.borderColor = "#cbd5e1"; };
+        }
+
+        btn.addEventListener("click", function() {
+          selectWeek(w);
         });
-        html += '</optgroup>';
-      }
 
-      select.innerHTML = html;
+        weeksGrid.appendChild(btn);
+      });
+
+      // Render info card
+      if (!selectedWeekObj || selectedWeekObj.semester !== currentSem || (currentSub === "toan" ? selectedWeekObj.subject !== "Toán" : selectedWeekObj.subject !== "Tiếng Việt")) {
+        if (weeksInSem.length > 0) {
+          selectWeek(weeksInSem[0], false);
+        }
+      } else {
+        renderInfoCard();
+      }
     }
 
-    renderSelectOptions('all');
+    function selectWeek(w, autoFillTextarea) {
+      if (autoFillTextarea === undefined) autoFillTextarea = true;
+      selectedWeekObj = w;
 
-    // Filter button clicks
-    filterWrap.querySelectorAll('.kntt-f-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        filterWrap.querySelectorAll('.kntt-f-btn').forEach(function(b) {
-          b.style.background = '#fff';
-          b.style.color = '#334155';
-          b.style.borderColor = '#94a3b8';
-        });
-        btn.style.background = '#0284c7';
-        btn.style.color = '#fff';
-        btn.style.borderColor = '#0284c7';
-        renderSelectOptions(btn.dataset.sub);
-      });
-    });
-
-    // Select change
-    select.addEventListener("change", function() {
-      var selectedId = select.value;
-      if (!selectedId) return;
-
-      var foundTopic = null;
-      var kntt = window.GRADE1_KNTT || {};
-
-      if (kntt.toan) {
-        foundTopic = kntt.toan.find(function(t) { return t.id === selectedId; });
-      }
-      if (!foundTopic && kntt.tiengViet) {
-        foundTopic = kntt.tiengViet.find(function(t) { return t.id === selectedId; });
-      }
-      if (!foundTopic && window.GRADE1_QUESTIONS) {
-        foundTopic = window.GRADE1_QUESTIONS.find(function(t) { return t.id === selectedId; });
-      }
-
-      if (foundTopic) {
-        quizInput.value = foundTopic.questions.join("\n");
+      if (autoFillTextarea) {
+        quizInput.value = w.questions.join("\n");
         if (window.SA && SA.toast) {
-          SA.toast("Đã nạp " + foundTopic.questions.length + " câu " + foundTopic.title + "!");
+          SA.toast("✅ Đã nạp Tuần " + w.week + " (" + w.subject + "): " + w.questions.length + " câu hỏi!");
         }
       }
+
+      renderInfoCard();
+
+      // Highlight active button
+      Array.prototype.slice.call(weeksGrid.children).forEach(function(child) {
+        if (child.textContent === "T." + w.week) {
+          var activeColor = currentSub === "toan" ? "#0284c7" : "#dc2626";
+          child.style.border = "2px solid " + activeColor;
+          child.style.background = activeColor;
+          child.style.color = "#ffffff";
+          child.style.fontWeight = "900";
+        } else {
+          child.style.border = "1px solid #cbd5e1";
+          child.style.background = "#ffffff";
+          child.style.color = "#334155";
+          child.style.fontWeight = "700";
+        }
+      });
+    }
+
+    function renderInfoCard() {
+      if (!selectedWeekObj) {
+        infoCard.innerHTML = "<div style='color:#64748b; font-size:0.85rem;'>Chưa chọn tuần học.</div>";
+        return;
+      }
+
+      var w = selectedWeekObj;
+      var themeColor = currentSub === "toan" ? "#0284c7" : "#dc2626";
+
+      infoCard.innerHTML = 
+        "<div style='display:flex; justify-content:space-between; align-items:flex-start; gap:8px;'>" +
+          "<div>" +
+            "<div style='font-size:0.75rem; font-weight:800; color:" + themeColor + "; text-transform:uppercase;'>" +
+              w.subject + " 1 • HỌC KÌ " + w.semester + " • " + w.icon + " TUẦN " + w.week +
+            "</div>" +
+            "<div style='font-size:0.98rem; font-weight:800; color:#0f172a; margin:3px 0 2px;'>" + w.title + "</div>" +
+            "<div style='font-size:0.8rem; color:#64748b;'>" + (w.lesson || '') + "</div>" +
+          "</div>" +
+          "<span style='background:#f1f5f9; color:#475569; font-size:0.75rem; font-weight:800; padding:4px 8px; border-radius:6px; white-space:nowrap;'>" +
+            w.questions.length + " câu hỏi" +
+          "</span>" +
+        "</div>" +
+        "<div style='display:flex; gap:8px; margin-top:8px; align-items:center;'>" +
+          "<button type='button' id='knttManualFillBtn' style='flex:1; padding:7px 12px; background:" + themeColor + "; color:#fff; border:none; border-radius:6px; font-weight:800; font-size:0.82rem; cursor:pointer;'>" +
+            "⚡ Nạp lại tuần này vào khung soạn đề" +
+          "</button>" +
+          "<button type='button' id='knttTogglePrevBtn' style='padding:7px 12px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;'>" +
+            "👁️ Xem câu hỏi" +
+          "</button>" +
+        "</div>" +
+        "<div id='knttPreviewList' style='display:none; margin-top:8px; padding:8px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; max-height:140px; overflow-y:auto; font-size:0.76rem; font-family:monospace; line-height:1.4; color:#334155;'>" +
+          w.questions.map(function(q, idx) { return (idx + 1) + ". " + q; }).join("<br>") +
+        "</div>";
+
+      document.getElementById("knttManualFillBtn").addEventListener("click", function() {
+        quizInput.value = w.questions.join("\n");
+        if (window.SA && SA.toast) {
+          SA.toast("✅ Đã nạp " + w.title + "!");
+        }
+      });
+
+      var prevBtn = document.getElementById("knttTogglePrevBtn");
+      var prevList = document.getElementById("knttPreviewList");
+      prevBtn.addEventListener("click", function() {
+        var isHidden = prevList.style.display === "none";
+        prevList.style.display = isHidden ? "block" : "none";
+        prevBtn.textContent = isHidden ? "✕ Đóng xem" : "👁️ Xem câu hỏi";
+      });
+    }
+
+    // Events
+    btnToan.addEventListener("click", function() {
+      currentSub = "toan";
+      updateView();
     });
 
-    wrap.appendChild(topRow);
-    wrap.appendChild(select);
-    quizInput.parentNode.insertBefore(wrap, quizInput);
+    btnTV.addEventListener("click", function() {
+      currentSub = "tiengViet";
+      updateView();
+    });
+
+    btnSem1.addEventListener("click", function() {
+      currentSem = 1;
+      updateView();
+    });
+
+    btnSem2.addEventListener("click", function() {
+      currentSem = 2;
+      updateView();
+    });
+
+    // Assemble components into box
+    box.appendChild(subTabs);
+    box.appendChild(semBar);
+    box.appendChild(gridLabel);
+    box.appendChild(weeksGrid);
+    box.appendChild(infoCard);
+
+    // Insert directly before quizInput
+    quizInput.parentNode.insertBefore(box, quizInput);
+
+    // Initial render
+    updateView();
   }
 
-  // Ensure both grade1-kntt.js and grade1-questions.js are loaded
-  function loadScriptIfNeeded(src, callback) {
-    var isSubGame = window.location.pathname.indexOf("/games/") !== -1;
-    var fullSrc = isSubGame ? "../../" + src : src;
+  window.initGrade1Selector = initGrade1Selector;
+
+  // Ensure grade1-kntt.js is loaded
+  function loadScript(src, cb) {
+    var p = window.location.pathname.toLowerCase();
+    var isSubGame = p.indexOf("/games/") !== -1 || p.indexOf("\\games\\") !== -1;
     var script = document.createElement("script");
-    script.src = fullSrc;
-    script.onload = callback;
+    script.src = isSubGame ? "../../" + src : src;
+    script.onload = cb;
     document.head.appendChild(script);
   }
 
   if (!window.GRADE1_KNTT) {
-    loadScriptIfNeeded("assets/js/grade1-kntt.js", function() {
-      if (!window.GRADE1_QUESTIONS) {
-        loadScriptIfNeeded("assets/js/grade1-questions.js", initGrade1Selector);
-      } else {
-        initGrade1Selector();
-      }
-    });
+    loadScript("assets/js/grade1-kntt.js", initGrade1Selector);
   } else {
     initGrade1Selector();
   }

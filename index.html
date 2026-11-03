@@ -50,7 +50,6 @@
   }
 </style>
 <script src="assets/js/grade1-kntt.js"></script>
-<script src="assets/js/grade1-questions.js"></script>
 </head>
 <body>
 
@@ -92,34 +91,55 @@
   </div>
 </section>
 
+
 <!-- ============================================================
-     BỘ CÂU HỎI & ĐỀ THI LỚP 1 (CHUẨN GDPT 2018)
+     BỘ CÂU HỎI LỚP 1 THEO TUẦN — KẾT NỐI TRI THỨC VỚI CUỘC SỐNG
+     Phân chia Toán & Tiếng Việt riêng biệt từ Tuần 1 đến Tuần 35
      ============================================================ -->
-<section id="lop-1" style="background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 100%); border-top: 2px solid #a7f3d0; border-bottom: 2px solid #cbd5e1; padding: 48px 0;">
+<section id="lop-1" style="background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 100%); border-top: 3px solid #0284c7; border-bottom: 2px solid #cbd5e1; padding: 50px 0;">
   <div class="container">
-    <div style="text-align: center; max-width: 800px; margin: 0 auto 36px;">
-      <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; font-size:0.85rem; font-weight:800; padding:6px 16px; border-radius:999px; border:1px solid #86efac; margin-bottom:12px;">
-        🌟 CHUYÊN ĐỀ ĐẶC BIỆT DÀNH CHO TIỂU HỌC
+    <div style="text-align: center; max-width: 950px; margin: 0 auto 32px;">
+      <span style="display:inline-flex; align-items:center; gap:6px; background:#e0f2fe; color:#0369a1; font-size:0.85rem; font-weight:800; padding:6px 18px; border-radius:999px; border:1px solid #7dd3fc; margin-bottom:12px;">
+        📖 BÁM SÁT 100% KẾ HOẠCH DẠY HỌC & SÁCH GIÁO KHOA KẾT NỐI TRI THỨC
       </span>
-      <h2 style="font-size: 2.1rem; font-weight: 900; color: #0f172a; margin: 0 0 12px; letter-spacing: -0.5px;">
-        Bộ Câu Hỏi &amp; Đề Thi Lớp 1 Có Sẵn
+      <h2 style="font-size: 2.2rem; font-weight: 900; color: #0f172a; margin: 0 0 10px; letter-spacing: -0.5px;">
+        Ngân Hàng Đề Lớp 1 — Theo Từng Tuần (Tuần 1 → 35)
       </h2>
-      <p style="font-size: 1.05rem; color: #475569; margin: 0; line-height: 1.6;">
-        Hơn <strong>260+ câu hỏi trắc nghiệm</strong> được biên soạn chuẩn theo Chương trình GDPT 2018. Chọn chủ đề để <strong>chơi ngay</strong> trên các trò chơi hoặc <strong>sao chép 1 chạm</strong>!
+      <p style="font-size: 1.02rem; color: #475569; margin: 0; line-height: 1.6;">
+        Được biên soạn công phu <strong>560 câu hỏi</strong> bám sát phân phối chương trình Lớp 1 (Trường TH Vũng Áng). Chia riêng <strong>Môn Toán</strong> và <strong>Môn Tiếng Việt</strong> giúp thầy cô nạp đề 1 chạm vào các trò chơi tương tác!
       </p>
 
-      <!-- Grade 1 Filter Tabs -->
-      <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; flex-wrap:wrap;" id="grade1FilterTabs">
-        <button class="g1-tab active" data-subject="all" style="padding:8px 18px; border-radius:999px; border:none; font-weight:700; font-size:0.88rem; cursor:pointer; background:#059669; color:#fff; transition:all 0.2s;">Tất cả (16 chủ đề)</button>
-        <button class="g1-tab" data-subject="Toán" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">➕ Toán 1 (5 chủ đề)</button>
-        <button class="g1-tab" data-subject="Tiếng Việt" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">📖 Tiếng Việt 1 (4 chủ đề)</button>
-        <button class="g1-tab" data-subject="Khoa học" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🌿 TN &amp; XH 1 (4 chủ đề)</button>
-        <button class="g1-tab" data-subject="Tiếng Anh" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🇬🇧 Tiếng Anh 1 (3 chủ đề)</button>
+      <!-- SUBJECT TABS (TOÁN vs TIẾNG VIỆT) -->
+      <div style="display:flex; justify-content:center; gap:12px; margin-top:24px;" id="mainSubjectTabs">
+        <button class="kntt-main-sub active" data-sub="toan" style="padding:12px 28px; border-radius:12px; border:2px solid #0284c7; font-weight:800; font-size:1.05rem; cursor:pointer; background:#0284c7; color:#fff; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(2,132,199,0.25); transition:all 0.2s;">
+          📘 MÔN TOÁN 1 <span style="font-size:0.8rem; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:999px;">35 Tuần • 280 Câu</span>
+        </button>
+        <button class="kntt-main-sub" data-sub="tiengViet" style="padding:12px 28px; border-radius:12px; border:2px solid #cbd5e1; font-weight:800; font-size:1.05rem; cursor:pointer; background:#fff; color:#334155; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
+          📕 MÔN TIẾNG VIỆT 1 <span style="font-size:0.8rem; background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:999px;">35 Tuần • 280 Câu</span>
+        </button>
+      </div>
+
+      <!-- SEMESTER & QUICK FILTER BAR -->
+      <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap;">
+        <div style="background:#e2e8f0; padding:4px; border-radius:10px; display:inline-flex; gap:4px;" id="semSwitchGroup">
+          <button class="kntt-sem-btn active" data-sem="1" style="padding:8px 16px; border-radius:8px; border:none; background:#fff; color:#0f172a; font-weight:800; font-size:0.85rem; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.1);">📅 Học kì 1 (Tuần 1 - 18)</button>
+          <button class="kntt-sem-btn" data-sem="2" style="padding:8px 16px; border-radius:8px; border:none; background:transparent; color:#64748b; font-weight:700; font-size:0.85rem; cursor:pointer;">📅 Học kì 2 (Tuần 19 - 35)</button>
+          <button class="kntt-sem-btn" data-sem="all" style="padding:8px 16px; border-radius:8px; border:none; background:transparent; color:#64748b; font-weight:700; font-size:0.85rem; cursor:pointer;">🌟 Xem cả năm (35 Tuần)</button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:6px;">
+          <input type="text" id="knttSearchInput" placeholder="🔍 Tìm nhanh bài, tuần..." style="padding:8px 16px; border-radius:20px; border:1.5px solid #cbd5e1; font-size:0.85rem; width:220px; outline:none; background:#fff;">
+        </div>
+      </div>
+
+      <!-- QUICK WEEK BUTTONS ROW -->
+      <div id="quickWeekRow" style="display:flex; justify-content:center; gap:5px; flex-wrap:wrap; margin-top:14px; max-width:850px; margin-left:auto; margin-right:auto;">
+        <!-- Populated via JS -->
       </div>
     </div>
 
-    <!-- Topics Grid -->
-    <div id="grade1CardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:20px;">
+    <!-- Weeks Cards Grid -->
+    <div id="knttCardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
       <!-- Populated via JS -->
     </div>
   </div>
@@ -127,89 +147,149 @@
 
 <script>
 (function() {
-  function renderGrade1Section() {
-    var container = document.getElementById('grade1CardsContainer');
-    if (!container || !window.GRADE1_QUESTIONS) return;
+  function renderKNTTSection() {
+    var container = document.getElementById('knttCardsContainer');
+    var searchInput = document.getElementById('knttSearchInput');
+    var quickWeekRow = document.getElementById('quickWeekRow');
+    if (!container) return;
 
-    var currentSubject = 'all';
+    var kntt = window.GRADE1_KNTT || { toan: [], tiengViet: [] };
+    var currentSub = 'toan'; // 'toan' or 'tiengViet'
+    var currentSem = '1';    // '1', '2', or 'all'
+
+    function getFilteredList() {
+      var sourceList = currentSub === 'toan' ? (kntt.toan || []) : (kntt.tiengViet || []);
+      var list = sourceList;
+
+      if (currentSem === '1') {
+        list = sourceList.filter(function(w) { return w.semester === 1; });
+      } else if (currentSem === '2') {
+        list = sourceList.filter(function(w) { return w.semester === 2; });
+      }
+
+      var q = (searchInput ? searchInput.value.trim().toLowerCase() : '');
+      if (q) {
+        list = sourceList.filter(function(w) {
+          return w.title.toLowerCase().indexOf(q) !== -1 || 
+                 w.lesson.toLowerCase().indexOf(q) !== -1 ||
+                 ('tuần ' + w.week).indexOf(q) !== -1 ||
+                 ('t' + w.week).indexOf(q) !== -1;
+        });
+      }
+      return list;
+    }
+
+    function renderQuickWeekPills() {
+      if (!quickWeekRow) return;
+      quickWeekRow.innerHTML = '';
+      var sourceList = currentSub === 'toan' ? (kntt.toan || []) : (kntt.tiengViet || []);
+      var weeksToShow = sourceList;
+      if (currentSem === '1') weeksToShow = sourceList.filter(function(w) { return w.semester === 1; });
+      else if (currentSem === '2') weeksToShow = sourceList.filter(function(w) { return w.semester === 2; });
+
+      var activeTheme = currentSub === 'toan' ? '#0284c7' : '#dc2626';
+
+      weeksToShow.forEach(function(w) {
+        var pill = document.createElement('a');
+        pill.href = '#kntt-week-' + w.id;
+        pill.textContent = 'T.' + w.week;
+        pill.title = w.title;
+        pill.style.cssText = 'padding:4px 9px; font-size:0.75rem; font-weight:800; border-radius:6px; background:#fff; border:1px solid #cbd5e1; color:#334155; text-decoration:none; transition:all 0.15s;';
+        pill.onmouseenter = function() { pill.style.borderColor = activeTheme; pill.style.color = activeTheme; pill.style.background = '#f8fafc'; };
+        pill.onmouseleave = function() { pill.style.borderColor = '#cbd5e1'; pill.style.color = '#334155'; pill.style.background = '#fff'; };
+        quickWeekRow.appendChild(pill);
+      });
+    }
 
     function displayCards() {
-      var filtered = window.GRADE1_QUESTIONS.filter(function(t) {
-        return (currentSubject === 'all') || (t.subject === currentSubject);
-      });
-
+      var list = getFilteredList();
       container.innerHTML = '';
-      filtered.forEach(function(t) {
+
+      if (list.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b; font-size: 1.05rem;">Không tìm thấy tuần học nào phù hợp với từ khóa!</div>';
+        return;
+      }
+
+      list.forEach(function(item) {
         var card = document.createElement('div');
-        card.style.cssText = 'background:#fff; border-radius:14px; border:1px solid #e2e8f0; padding:20px; display:flex; flex-direction:column; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:transform 0.2s, box-shadow 0.2s;';
+        card.id = 'kntt-week-' + item.id;
+        card.style.cssText = 'background:#fff; border-radius:14px; border:1.5px solid #e2e8f0; padding:20px; display:flex; flex-direction:column; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:transform 0.2s, box-shadow 0.2s;';
         card.onmouseenter = function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; };
-        card.onmouseleave = function() { card.style.transform = 'none'; card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; };
+        card.onmouseleave = function() { card.style.transform = 'translateY(0)'; card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; };
 
-        var badgeColor = t.subject === 'Toán' ? '#2563eb' : (t.subject === 'Tiếng Việt' ? '#dc2626' : (t.subject === 'Khoa học' ? '#16a34a' : '#9333ea'));
-        var badgeBg = t.subject === 'Toán' ? '#dbeafe' : (t.subject === 'Tiếng Việt' ? '#fee2e2' : (t.subject === 'Khoa học' ? '#dcfce7' : '#f3e8ff'));
+        var badgeColor = item.subject === 'Toán' ? '#0284c7' : '#dc2626';
+        var badgeBg = item.subject === 'Toán' ? '#e0f2fe' : '#fee2e2';
 
-        var questionsText = t.questions.join('\n');
+        var questionsText = item.questions.join('\n');
 
         card.innerHTML = 
-          '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">' +
-            '<div style="display:flex; align-items:center; gap:8px;">' +
-              '<span style="font-size:1.6rem;">' + t.icon + '</span>' +
-              '<span style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:999px;">' + t.subject.toUpperCase() + ' 1</span>' +
-            '</div>' +
-            '<span style="font-size:0.8rem; font-weight:700; color:#64748b;">' + t.questions.length + ' câu hỏi</span>' +
+          '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">' +
+            '<span style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:999px;">' +
+              item.icon + ' ' + item.subject + ' 1 • Học kì ' + item.semester +
+            '</span>' +
+            '<span style="font-size:0.78rem; font-weight:800; color:#64748b; background:#f1f5f9; padding:4px 8px; border-radius:6px;">' +
+              'Tuần ' + item.week +
+            '</span>' +
           '</div>' +
-          '<h3 style="margin:0 0 10px; font-size:1.1rem; font-weight:800; color:#0f172a; line-height:1.4;">' + t.title + '</h3>' +
-          '<details style="margin-bottom:16px; font-size:0.82rem; color:#64748b;">' +
-            '<summary style="cursor:pointer; color:#4f46e5; font-weight:700;">Xem trước 3 câu mẫu...</summary>' +
-            '<div style="margin-top:8px; padding:10px; background:#f8fafc; border-radius:8px; font-family:monospace; line-height:1.4;">' +
-              t.questions.slice(0, 3).join('<br>') +
+          '<h3 style="font-size:1.1rem; font-weight:800; color:#0f172a; margin:0 0 6px; line-height:1.4;">' +
+            item.title +
+          '</h3>' +
+          '<p style="font-size:0.83rem; color:#64748b; margin:0 0 14px; line-height:1.4;">' +
+            item.lesson +
+          '</p>' +
+          '<details style="margin-bottom:16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; padding:8px 12px; font-size:0.82rem;">' +
+            '<summary style="font-weight:700; color:#334155; cursor:pointer; user-select:none;">' +
+              '👁️ Xem trước ' + item.questions.length + ' câu hỏi mẫu' +
+            '</summary>' +
+            '<div style="margin-top:10px; max-height:180px; overflow-y:auto; line-height:1.6; color:#475569; font-size:0.8rem; font-family:monospace; padding-right:4px;">' +
+              item.questions.map(function(q, idx) { return (idx + 1) + '. ' + q; }).join('<br>') +
             '</div>' +
           '</details>' +
-          '<div style="margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9; display:flex; flex-direction:column; gap:8px;">' +
-            '<button class="g1-copy-btn" style="width:100%; padding:9px; background:#f1f5f9; hover:background:#e2e8f0; border:1px solid #cbd5e1; border-radius:8px; font-size:0.85rem; font-weight:700; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">' +
-              '📋 Sao chép bộ câu hỏi' +
+          '<div style="margin-top:auto; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; flex-direction:column; gap:8px;">' +
+            '<button class="kntt-copy-btn" style="width:100%; padding:9px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:0.84rem; font-weight:800; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">' +
+              '📋 Sao chép bộ đề Tuần ' + item.week +
             '</button>' +
             '<div style="display:flex; gap:6px;">' +
-              '<button class="g1-play-btn" data-game="duavit" data-url="games/dua-vit/index.html" style="flex:1; padding:7px 4px; background:#0ea5e9; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🦆 Đua Vịt</button>' +
-              '<button class="g1-play-btn" data-game="vongquay" data-url="games/vong-quay/index.html" style="flex:1; padding:7px 4px; background:#8b5cf6; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🎡 Vòng Quay</button>' +
-              '<button class="g1-play-btn" data-game="keoco" data-url="games/keo-co/index.html" style="flex:1; padding:7px 4px; background:#f97316; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🪢 Kéo Co</button>' +
-              '<button class="g1-play-btn" data-game="chemhoaqua" data-url="games/chem-hoa-qua/index.html" style="flex:1; padding:7px 4px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🍉 Chém Quả</button>' +
+              '<button class="kntt-play-btn" data-game="duavit" data-url="games/dua-vit/index.html" style="flex:1; padding:7px 2px; background:#0ea5e9; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🦆 Đua Vịt</button>' +
+              '<button class="kntt-play-btn" data-game="vongquay" data-url="games/vong-quay/index.html" style="flex:1; padding:7px 2px; background:#8b5cf6; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🎡 Vòng Quay</button>' +
+              '<button class="kntt-play-btn" data-game="keoco" data-url="games/keo-co/index.html" style="flex:1; padding:7px 2px; background:#f97316; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🪢 Kéo Co</button>' +
+              '<button class="kntt-play-btn" data-game="chemhoaqua" data-url="games/chem-hoa-qua/index.html" style="flex:1; padding:7px 2px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🍉 Chém Quả</button>' +
             '</div>' +
           '</div>';
 
-        // Event copy
-        var copyBtn = card.querySelector('.g1-copy-btn');
+        // Copy button event
+        var copyBtn = card.querySelector('.kntt-copy-btn');
         copyBtn.addEventListener('click', function() {
           navigator.clipboard.writeText(questionsText).then(function() {
-            copyBtn.textContent = '✅ Đã sao chép vào bộ nhớ tạm!';
+            copyBtn.textContent = '✅ Đã sao chép Tuần ' + item.week + '!';
             copyBtn.style.background = '#dcfce7';
             copyBtn.style.color = '#15803d';
+            copyBtn.style.borderColor = '#86efac';
             setTimeout(function() {
-              copyBtn.textContent = '📋 Sao chép bộ câu hỏi';
-              copyBtn.style.background = '#f1f5f9';
+              copyBtn.textContent = '📋 Sao chép bộ đề Tuần ' + item.week;
+              copyBtn.style.background = '#f8fafc';
               copyBtn.style.color = '#334155';
-            }, 2000);
-            if (window.SA && SA.toast) SA.toast('Đã sao chép! Hãy dán vào ô Soạn câu hỏi của game.');
+              copyBtn.style.borderColor = '#cbd5e1';
+            }, 2500);
           });
         });
 
-        // Event direct play
-        card.querySelectorAll('.g1-play-btn').forEach(function(playBtn) {
-          playBtn.addEventListener('click', function() {
-            var gKey = playBtn.getAttribute('data-game');
-            var gUrl = playBtn.getAttribute('data-url');
-            // Save to localStorage for that game
-            try {
-              var parsedItems = [];
-              t.questions.forEach(function(line) {
-                var parts = line.split('|').map(function(s) { return s.trim(); });
-                if (parts.length >= 3) {
-                  parsedItems.push({ q: parts[0], options: parts.slice(1), correct: 0 });
-                }
-              });
-              localStorage.setItem('sa_quiz_' + gKey, JSON.stringify(parsedItems));
-            } catch(e) {}
-            // Navigate to game
+        // Play game button event (1-click load questions and start)
+        card.querySelectorAll('.kntt-play-btn').forEach(function(pBtn) {
+          pBtn.addEventListener('click', function() {
+            var gKey = pBtn.getAttribute('data-game');
+            var gUrl = pBtn.getAttribute('data-url');
+            
+            var storageKey = 'studyai_' + gKey + '_questions';
+            if (gKey === 'duavit') storageKey = 'duck_race_quiz';
+            else if (gKey === 'vongquay') storageKey = 'studyai_vongquay_questions';
+            else if (gKey === 'keoco') storageKey = 'studyai_keoco_questions';
+            else if (gKey === 'chemhoaqua') storageKey = 'studyai_chemhoaqua_questions';
+
+            localStorage.setItem(storageKey, questionsText);
+            sessionStorage.setItem('current_active_quiz', questionsText);
+            sessionStorage.setItem('current_quiz_title', item.title);
+
             window.location.href = gUrl;
           });
         });
@@ -218,33 +298,74 @@
       });
     }
 
-    displayCards();
-
-    // Tabs filter event
-    var tabs = document.querySelectorAll('#grade1FilterTabs .g1-tab');
-    tabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        tabs.forEach(function(b) {
+    // Main Subject Tabs click
+    var subBtns = document.querySelectorAll('#mainSubjectTabs .kntt-main-sub');
+    subBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        currentSub = btn.dataset.sub;
+        subBtns.forEach(function(b) {
+          b.classList.remove('active');
           b.style.background = '#fff';
           b.style.color = '#334155';
-          b.style.border = '1px solid #cbd5e1';
+          b.style.borderColor = '#cbd5e1';
+          b.style.boxShadow = 'none';
         });
-        tab.style.background = '#059669';
-        tab.style.color = '#fff';
-        tab.style.border = 'none';
-        currentSubject = tab.getAttribute('data-subject');
+        btn.classList.add('active');
+        if (currentSub === 'toan') {
+          btn.style.background = '#0284c7';
+          btn.style.color = '#fff';
+          btn.style.borderColor = '#0284c7';
+          btn.style.boxShadow = '0 4px 12px rgba(2,132,199,0.25)';
+        } else {
+          btn.style.background = '#dc2626';
+          btn.style.color = '#fff';
+          btn.style.borderColor = '#dc2626';
+          btn.style.boxShadow = '0 4px 12px rgba(220,38,38,0.25)';
+        }
+        renderQuickWeekPills();
         displayCards();
       });
     });
+
+    // Semester Buttons click
+    var semBtns = document.querySelectorAll('#semSwitchGroup .kntt-sem-btn');
+    semBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        currentSem = btn.dataset.sem;
+        semBtns.forEach(function(b) {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = '#64748b';
+          b.style.boxShadow = 'none';
+        });
+        btn.classList.add('active');
+        btn.style.background = '#fff';
+        btn.style.color = '#0f172a';
+        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        renderQuickWeekPills();
+        displayCards();
+      });
+    });
+
+    // Search input event
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        displayCards();
+      });
+    }
+
+    renderQuickWeekPills();
+    displayCards();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderGrade1Section);
+    document.addEventListener('DOMContentLoaded', renderKNTTSection);
   } else {
-    renderGrade1Section();
+    renderKNTTSection();
   }
 })();
 </script>
+
 
 
 <div class="filter-bar" id="games">
@@ -926,203 +1047,7 @@ window.STUDYAI_EXAMS = [{"id":"exam_lop1_toan_hk1","slug":"de-kiem-tra-toan-lop-
 
 </body>
 </html>
-<!-- ============================================================
-     BỘ CÂU HỎI LỚP 1 THEO TUẦN (SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG)
-     ============================================================ -->
-<section id="lop-1" style="background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 100%); border-top: 3px solid #10b981; border-bottom: 2px solid #cbd5e1; padding: 50px 0;">
-  <div class="container">
-    <div style="text-align: center; max-width: 900px; margin: 0 auto 36px;">
-      <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#15803d; font-size:0.85rem; font-weight:800; padding:6px 18px; border-radius:999px; border:1px solid #86efac; margin-bottom:12px;">
-        📖 BÁM SÁT 100% SÁCH GIÁO KHOA KẾT NỐI TRI THỨC VỚI CUỘC SỐNG
-      </span>
-      <h2 style="font-size: 2.2rem; font-weight: 900; color: #0f172a; margin: 0 0 12px; letter-spacing: -0.5px;">
-        Toán &amp; Tiếng Việt Lớp 1 — Đầy Đủ 35 Tuần Học
-      </h2>
-      <p style="font-size: 1.05rem; color: #475569; margin: 0; line-height: 1.6;">
-        Hơn <strong>560+ câu hỏi trắc nghiệm</strong> được phân chia chi tiết theo <strong>từng tuần học (Tuần 1 đến Tuần 35)</strong>. Thầy cô chỉ cần chọn tuần đang dạy là học sinh có thể <strong>chơi ngay</strong> trên Đua Vịt, Vòng Quay, Kéo Co... hoặc <strong>sao chép 1 chạm</strong>!
-      </p>
 
-      <!-- Filter Tabs by Semester & Subject -->
-      <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; flex-wrap:wrap;" id="knttFilterTabs">
-        <button class="kntt-tab active" data-filter="toan-hk1" style="padding:10px 18px; border-radius:999px; border:none; font-weight:800; font-size:0.85rem; cursor:pointer; background:#0284c7; color:#fff; transition:all 0.2s;">📘 Toán 1 — Học kì 1 (T1 - T18)</button>
-        <button class="kntt-tab" data-filter="toan-hk2" style="padding:10px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:800; font-size:0.85rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">📘 Toán 1 — Học kì 2 (T19 - T35)</button>
-        <button class="kntt-tab" data-filter="tv-hk1" style="padding:10px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:800; font-size:0.85rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">📕 Tiếng Việt 1 — Học kì 1 (T1 - T18)</button>
-        <button class="kntt-tab" data-filter="tv-hk2" style="padding:10px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:800; font-size:0.85rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">📕 Tiếng Việt 1 — Học kì 2 (T19 - T35)</button>
-        <button class="kntt-tab" data-filter="all-weeks" style="padding:10px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:800; font-size:0.85rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🌟 Tất cả 70 tuần</button>
-      </div>
-
-      <!-- Quick Week Search / Jump -->
-      <div style="margin-top:16px; display:flex; justify-content:center; align-items:center; gap:8px;">
-        <span style="font-size:0.85rem; font-weight:700; color:#64748b;">🔍 Tìm nhanh tuần học:</span>
-        <input type="text" id="knttSearchInput" placeholder="Ví dụ: tuần 5, cộng 10, vần an..." style="padding:6px 14px; border-radius:20px; border:1.5px solid #cbd5e1; font-size:0.85rem; width:260px; outline:none;">
-      </div>
-    </div>
-
-    <!-- Weeks Cards Grid -->
-    <div id="knttCardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
-      <!-- Populated via JS -->
-    </div>
-  </div>
-</section>
-
-<script>
-(function() {
-  function renderKNTTSection() {
-    var container = document.getElementById('knttCardsContainer');
-    var searchInput = document.getElementById('knttSearchInput');
-    if (!container) return;
-
-    var kntt = window.GRADE1_KNTT || { toan: [], tiengViet: [] };
-    var currentFilter = 'toan-hk1';
-
-    function getFilteredList() {
-      var list = [];
-      if (currentFilter === 'toan-hk1') {
-        list = (kntt.toan || []).filter(function(w) { return w.semester === 1; });
-      } else if (currentFilter === 'toan-hk2') {
-        list = (kntt.toan || []).filter(function(w) { return w.semester === 2; });
-      } else if (currentFilter === 'tv-hk1') {
-        list = (kntt.tiengViet || []).filter(function(w) { return w.semester === 1; });
-      } else if (currentFilter === 'tv-hk2') {
-        list = (kntt.tiengViet || []).filter(function(w) { return w.semester === 2; });
-      } else if (currentFilter === 'all-weeks') {
-        list = (kntt.toan || []).concat(kntt.tiengViet || []);
-      }
-
-      var q = (searchInput ? searchInput.value.trim().toLowerCase() : '');
-      if (q) {
-        list = (kntt.toan || []).concat(kntt.tiengViet || []).filter(function(w) {
-          return w.title.toLowerCase().indexOf(q) !== -1 || 
-                 w.lesson.toLowerCase().indexOf(q) !== -1 ||
-                 ('tuần ' + w.week).indexOf(q) !== -1 ||
-                 w.questions.some(function(line) { return line.toLowerCase().indexOf(q) !== -1; });
-        });
-      }
-      return list;
-    }
-
-    function displayCards() {
-      var list = getFilteredList();
-      container.innerHTML = '';
-
-      if (list.length === 0) {
-        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#64748b; font-weight:700;">🔍 Không tìm thấy tuần học nào phù hợp.</div>';
-        return;
-      }
-
-      list.forEach(function(item) {
-        var isMath = item.subject === 'Toán';
-        var card = document.createElement('div');
-        card.style.cssText = 'background:#fff; border-radius:14px; border:1.5px solid ' + (isMath ? '#bfdbfe' : '#fecaca') + '; padding:20px; display:flex; flex-direction:column; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:transform 0.2s, box-shadow 0.2s;';
-        card.onmouseenter = function() { card.style.transform = 'translateY(-3px)'; card.style.boxShadow = '0 12px 20px -3px rgba(0,0,0,0.1)'; };
-        card.onmouseleave = function() { card.style.transform = 'none'; card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; };
-
-        var badgeBg = isMath ? '#eff6ff' : '#fff1f2';
-        var badgeColor = isMath ? '#1d4ed8' : '#be123c';
-        var questionsText = item.questions.join('\n');
-
-        card.innerHTML = 
-          '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">' +
-            '<div style="display:flex; align-items:center; gap:8px;">' +
-              '<span style="font-size:1.5rem;">' + item.icon + '</span>' +
-              '<span style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:0.75rem; font-weight:900; padding:4px 10px; border-radius:999px; border:1px solid ' + (isMath ? '#93c5fd' : '#fca5a5') + ';">' +
-                item.subject.toUpperCase() + ' 1 • TUẦN ' + item.week +
-              '</span>' +
-            '</div>' +
-            '<span style="font-size:0.78rem; font-weight:800; color:#64748b;">' + item.questions.length + ' câu hỏi</span>' +
-          '</div>' +
-          '<h3 style="margin:0 0 6px; font-size:1.08rem; font-weight:800; color:#0f172a; line-height:1.4;">' + item.title + '</h3>' +
-          '<p style="margin:0 0 12px; font-size:0.83rem; color:#64748b; line-height:1.4;">' + item.lesson + '</p>' +
-          '<details style="margin-bottom:14px; font-size:0.82rem; color:#475569;">' +
-            '<summary style="cursor:pointer; color:#0284c7; font-weight:700;">Xem trước 3 câu hỏi mẫu...</summary>' +
-            '<div style="margin-top:8px; padding:10px; background:#f8fafc; border-radius:8px; font-family:monospace; font-size:0.78rem; line-height:1.4; border:1px solid #e2e8f0;">' +
-              item.questions.slice(0, 3).join('<br>') +
-            '</div>' +
-          '</details>' +
-          '<div style="margin-top:auto; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; flex-direction:column; gap:8px;">' +
-            '<button class="kntt-copy-btn" style="width:100%; padding:9px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:0.84rem; font-weight:800; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">' +
-              '📋 Sao chép bộ đề Tuần ' + item.week +
-            '</button>' +
-            '<div style="display:flex; gap:6px;">' +
-              '<button class="kntt-play-btn" data-game="duavit" data-url="games/dua-vit/index.html" style="flex:1; padding:7px 2px; background:#0ea5e9; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🦆 Đua Vịt</button>' +
-              '<button class="kntt-play-btn" data-game="vongquay" data-url="games/vong-quay/index.html" style="flex:1; padding:7px 2px; background:#8b5cf6; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🎡 Vòng Quay</button>' +
-              '<button class="kntt-play-btn" data-game="keoco" data-url="games/keo-co/index.html" style="flex:1; padding:7px 2px; background:#f97316; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🪢 Kéo Co</button>' +
-              '<button class="kntt-play-btn" data-game="chemhoaqua" data-url="games/chem-hoa-qua/index.html" style="flex:1; padding:7px 2px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:800; cursor:pointer;">🍉 Chém Quả</button>' +
-            '</div>' +
-          '</div>';
-
-        // Copy button event
-        var copyBtn = card.querySelector('.kntt-copy-btn');
-        copyBtn.addEventListener('click', function() {
-          navigator.clipboard.writeText(questionsText).then(function() {
-            copyBtn.textContent = '✅ Đã sao chép Tuần ' + item.week + '!';
-            copyBtn.style.background = '#dcfce7';
-            copyBtn.style.color = '#15803d';
-            setTimeout(function() {
-              copyBtn.textContent = '📋 Sao chép bộ đề Tuần ' + item.week;
-              copyBtn.style.background = '#f8fafc';
-              copyBtn.style.color = '#334155';
-            }, 2000);
-            if (window.SA && SA.toast) SA.toast('Đã sao chép đề ' + item.title + '! Hãy dán vào game để chơi.');
-          });
-        });
-
-        // Play game button event (1-click load questions and start)
-        card.querySelectorAll('.kntt-play-btn').forEach(function(pBtn) {
-          pBtn.addEventListener('click', function() {
-            var gKey = pBtn.getAttribute('data-game');
-            var gUrl = pBtn.getAttribute('data-url');
-            try {
-              var parsedItems = [];
-              item.questions.forEach(function(line) {
-                var parts = line.split('|').map(function(s) { return s.trim(); });
-                if (parts.length >= 3) {
-                  parsedItems.push({ q: parts[0], options: parts.slice(1), correct: 0 });
-                }
-              });
-              localStorage.setItem('sa_quiz_' + gKey, JSON.stringify(parsedItems));
-            } catch(e) {}
-            window.location.href = gUrl;
-          });
-        });
-
-        container.appendChild(card);
-      });
-    }
-
-    displayCards();
-
-    // Tabs filter event
-    var tabs = document.querySelectorAll('#knttFilterTabs .kntt-tab');
-    tabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        tabs.forEach(function(b) {
-          b.style.background = '#fff';
-          b.style.color = '#334155';
-          b.style.border = '1px solid #cbd5e1';
-        });
-        tab.style.background = '#0284c7';
-        tab.style.color = '#fff';
-        tab.style.border = 'none';
-        currentFilter = tab.getAttribute('data-filter');
-        displayCards();
-      });
-    });
-
-    if (searchInput) {
-      searchInput.addEventListener('input', function() {
-        displayCards();
-      });
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderKNTTSection);
-  } else {
-    renderKNTTSection();
-  }
-})();
-</script>
 
 
 
