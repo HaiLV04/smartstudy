@@ -49,12 +49,9 @@
     font-size: 0.8rem; font-weight: 700; margin-bottom: 18px;
   }
 </style>
+<script src="assets/js/grade1-questions.js"></script>
 </head>
 <body>
-
-<div class="author-bar" style="background:linear-gradient(90deg,#4f46e5,#7c3aed,#db2777);color:#fff;text-align:center;font-size:.86rem;line-height:1.45;padding:8px 16px;font-weight:600;letter-spacing:.1px;">
-  🎓 Thiết kế và chia sẻ cùng giáo viên: <strong style="font-weight:800;">PGS.TS Lê Thanh Huy</strong> - Giảng viên Trường Đại học Sư phạm - Đại học Đà Nẵng
-</div>
 
 <header class="site-header">
   <div class="container">
@@ -63,6 +60,7 @@
       <span>StudyAI<small>Học liệu số cho giáo viên</small></span>
     </a>
     <nav class="main-nav">
+      <a href="#lop-1" class="nav-link" style="color:#059669; font-weight:800;">🌟 Đề Lớp 1</a>
       <a href="index.html" class="nav-link active">Trang chủ</a>
       <a href="#games" class="nav-link">Trò chơi</a>
       <a href="#about" class="nav-link">Giới thiệu</a>
@@ -92,6 +90,161 @@
     </div>
   </div>
 </section>
+
+<!-- ============================================================
+     BỘ CÂU HỎI & ĐỀ THI LỚP 1 (CHUẨN GDPT 2018)
+     ============================================================ -->
+<section id="lop-1" style="background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 100%); border-top: 2px solid #a7f3d0; border-bottom: 2px solid #cbd5e1; padding: 48px 0;">
+  <div class="container">
+    <div style="text-align: center; max-width: 800px; margin: 0 auto 36px;">
+      <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; font-size:0.85rem; font-weight:800; padding:6px 16px; border-radius:999px; border:1px solid #86efac; margin-bottom:12px;">
+        🌟 CHUYÊN ĐỀ ĐẶC BIỆT DÀNH CHO TIỂU HỌC
+      </span>
+      <h2 style="font-size: 2.1rem; font-weight: 900; color: #0f172a; margin: 0 0 12px; letter-spacing: -0.5px;">
+        Bộ Câu Hỏi &amp; Đề Thi Lớp 1 Có Sẵn
+      </h2>
+      <p style="font-size: 1.05rem; color: #475569; margin: 0; line-height: 1.6;">
+        Hơn <strong>260+ câu hỏi trắc nghiệm</strong> được biên soạn chuẩn theo Chương trình GDPT 2018. Chọn chủ đề để <strong>chơi ngay</strong> trên các trò chơi hoặc <strong>sao chép 1 chạm</strong>!
+      </p>
+
+      <!-- Grade 1 Filter Tabs -->
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; flex-wrap:wrap;" id="grade1FilterTabs">
+        <button class="g1-tab active" data-subject="all" style="padding:8px 18px; border-radius:999px; border:none; font-weight:700; font-size:0.88rem; cursor:pointer; background:#059669; color:#fff; transition:all 0.2s;">Tất cả (16 chủ đề)</button>
+        <button class="g1-tab" data-subject="Toán" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">➕ Toán 1 (5 chủ đề)</button>
+        <button class="g1-tab" data-subject="Tiếng Việt" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">📖 Tiếng Việt 1 (4 chủ đề)</button>
+        <button class="g1-tab" data-subject="Khoa học" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🌿 TN &amp; XH 1 (4 chủ đề)</button>
+        <button class="g1-tab" data-subject="Tiếng Anh" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🇬🇧 Tiếng Anh 1 (3 chủ đề)</button>
+      </div>
+    </div>
+
+    <!-- Topics Grid -->
+    <div id="grade1CardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:20px;">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  function renderGrade1Section() {
+    var container = document.getElementById('grade1CardsContainer');
+    if (!container || !window.GRADE1_QUESTIONS) return;
+
+    var currentSubject = 'all';
+
+    function displayCards() {
+      var filtered = window.GRADE1_QUESTIONS.filter(function(t) {
+        return (currentSubject === 'all') || (t.subject === currentSubject);
+      });
+
+      container.innerHTML = '';
+      filtered.forEach(function(t) {
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#fff; border-radius:14px; border:1px solid #e2e8f0; padding:20px; display:flex; flex-direction:column; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:transform 0.2s, box-shadow 0.2s;';
+        card.onmouseenter = function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; };
+        card.onmouseleave = function() { card.style.transform = 'none'; card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; };
+
+        var badgeColor = t.subject === 'Toán' ? '#2563eb' : (t.subject === 'Tiếng Việt' ? '#dc2626' : (t.subject === 'Khoa học' ? '#16a34a' : '#9333ea'));
+        var badgeBg = t.subject === 'Toán' ? '#dbeafe' : (t.subject === 'Tiếng Việt' ? '#fee2e2' : (t.subject === 'Khoa học' ? '#dcfce7' : '#f3e8ff'));
+
+        var questionsText = t.questions.join('\n');
+
+        card.innerHTML = 
+          '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">' +
+            '<div style="display:flex; align-items:center; gap:8px;">' +
+              '<span style="font-size:1.6rem;">' + t.icon + '</span>' +
+              '<span style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:999px;">' + t.subject.toUpperCase() + ' 1</span>' +
+            '</div>' +
+            '<span style="font-size:0.8rem; font-weight:700; color:#64748b;">' + t.questions.length + ' câu hỏi</span>' +
+          '</div>' +
+          '<h3 style="margin:0 0 10px; font-size:1.1rem; font-weight:800; color:#0f172a; line-height:1.4;">' + t.title + '</h3>' +
+          '<details style="margin-bottom:16px; font-size:0.82rem; color:#64748b;">' +
+            '<summary style="cursor:pointer; color:#4f46e5; font-weight:700;">Xem trước 3 câu mẫu...</summary>' +
+            '<div style="margin-top:8px; padding:10px; background:#f8fafc; border-radius:8px; font-family:monospace; line-height:1.4;">' +
+              t.questions.slice(0, 3).join('<br>') +
+            '</div>' +
+          '</details>' +
+          '<div style="margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9; display:flex; flex-direction:column; gap:8px;">' +
+            '<button class="g1-copy-btn" style="width:100%; padding:9px; background:#f1f5f9; hover:background:#e2e8f0; border:1px solid #cbd5e1; border-radius:8px; font-size:0.85rem; font-weight:700; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">' +
+              '📋 Sao chép bộ câu hỏi' +
+            '</button>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="g1-play-btn" data-game="duavit" data-url="games/dua-vit/index.html" style="flex:1; padding:7px 4px; background:#0ea5e9; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🦆 Đua Vịt</button>' +
+              '<button class="g1-play-btn" data-game="vongquay" data-url="games/vong-quay/index.html" style="flex:1; padding:7px 4px; background:#8b5cf6; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🎡 Vòng Quay</button>' +
+              '<button class="g1-play-btn" data-game="keoco" data-url="games/keo-co/index.html" style="flex:1; padding:7px 4px; background:#f97316; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🪢 Kéo Co</button>' +
+              '<button class="g1-play-btn" data-game="chemhoaqua" data-url="games/chem-hoa-qua/index.html" style="flex:1; padding:7px 4px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🍉 Chém Quả</button>' +
+            '</div>' +
+          '</div>';
+
+        // Event copy
+        var copyBtn = card.querySelector('.g1-copy-btn');
+        copyBtn.addEventListener('click', function() {
+          navigator.clipboard.writeText(questionsText).then(function() {
+            copyBtn.textContent = '✅ Đã sao chép vào bộ nhớ tạm!';
+            copyBtn.style.background = '#dcfce7';
+            copyBtn.style.color = '#15803d';
+            setTimeout(function() {
+              copyBtn.textContent = '📋 Sao chép bộ câu hỏi';
+              copyBtn.style.background = '#f1f5f9';
+              copyBtn.style.color = '#334155';
+            }, 2000);
+            if (window.SA && SA.toast) SA.toast('Đã sao chép! Hãy dán vào ô Soạn câu hỏi của game.');
+          });
+        });
+
+        // Event direct play
+        card.querySelectorAll('.g1-play-btn').forEach(function(playBtn) {
+          playBtn.addEventListener('click', function() {
+            var gKey = playBtn.getAttribute('data-game');
+            var gUrl = playBtn.getAttribute('data-url');
+            // Save to localStorage for that game
+            try {
+              var parsedItems = [];
+              t.questions.forEach(function(line) {
+                var parts = line.split('|').map(function(s) { return s.trim(); });
+                if (parts.length >= 3) {
+                  parsedItems.push({ q: parts[0], options: parts.slice(1), correct: 0 });
+                }
+              });
+              localStorage.setItem('sa_quiz_' + gKey, JSON.stringify(parsedItems));
+            } catch(e) {}
+            // Navigate to game
+            window.location.href = gUrl;
+          });
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    displayCards();
+
+    // Tabs filter event
+    var tabs = document.querySelectorAll('#grade1FilterTabs .g1-tab');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(function(b) {
+          b.style.background = '#fff';
+          b.style.color = '#334155';
+          b.style.border = '1px solid #cbd5e1';
+        });
+        tab.style.background = '#059669';
+        tab.style.color = '#fff';
+        tab.style.border = 'none';
+        currentSubject = tab.getAttribute('data-subject');
+        displayCards();
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderGrade1Section);
+  } else {
+    renderGrade1Section();
+  }
+})();
+</script>
+
 
 <div class="filter-bar" id="games">
   <div class="container">
@@ -593,7 +746,7 @@
       <div>
         <h4>🎓 StudyAI</h4>
         <p style="font-size:.88rem; line-height:1.6;">Bộ sưu tập 48 trò chơi &amp; công cụ dạy học tương tác miễn phí dành cho giáo viên Việt Nam.</p>
-        <p style="font-size:.82rem; line-height:1.6; margin-top:10px; opacity:.85;">Cố vấn chuyên môn:<br><strong>PGS.TS Lê Thanh Huy</strong><br>Trường Đại học Sư phạm — Đại học Đà Nẵng</p>
+        
       </div>
       <div>
         <h4>Danh mục trò chơi</h4>

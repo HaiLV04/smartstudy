@@ -147,3 +147,60 @@ const SA = (() => {
 
   return { toast, confetti, beep, openModal, closeModal, shuffle, Quiz, Names };
 })();
+
+
+/* ============================================================
+   Tự động gắn thanh "Nạp nhanh bộ đề Lớp 1" vào ô soạn câu hỏi
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", function() {
+  function initGrade1Selector() {
+    var quizInput = document.getElementById("quizInput");
+    if (!quizInput || quizInput.dataset.hasGrade1Select) return;
+    quizInput.dataset.hasGrade1Select = "true";
+
+    var wrap = document.createElement("div");
+    wrap.className = "grade1-quick-select";
+    wrap.style.cssText = "margin-bottom:10px; padding:10px 14px; background:#eff6ff; border:1.5px solid #93c5fd; border-radius:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; box-shadow:0 2px 4px rgba(37,99,235,0.06);";
+
+    var label = document.createElement("span");
+    label.style.cssText = "font-size:0.85rem; font-weight:800; color:#1e40af; display:flex; align-items:center; gap:6px;";
+    label.innerHTML = "⚡ Nạp nhanh đề Lớp 1:";
+
+    var select = document.createElement("select");
+    select.style.cssText = "flex:1; min-width:240px; padding:8px 12px; font-size:0.85rem; border-radius:8px; border:1px solid #93c5fd; background:#fff; font-weight:700; color:#0f172a; cursor:pointer;";
+    
+    var optionsHtml = '<option value="">-- Chọn chuyên đề Lớp 1 chuẩn có sẵn --</option>';
+    if (window.GRADE1_QUESTIONS && Array.isArray(window.GRADE1_QUESTIONS)) {
+      window.GRADE1_QUESTIONS.forEach(function(t) {
+        optionsHtml += '<option value="' + t.id + '">' + t.icon + ' [' + t.subject + ' 1] ' + t.title + ' (' + t.questions.length + ' câu)</option>';
+      });
+    }
+    select.innerHTML = optionsHtml;
+
+    select.addEventListener("change", function() {
+      var selectedId = select.value;
+      if (!selectedId || !window.GRADE1_QUESTIONS) return;
+      var topic = window.GRADE1_QUESTIONS.find(function(t) { return t.id === selectedId; });
+      if (topic) {
+        quizInput.value = topic.questions.join("\n");
+        if (window.SA && SA.toast) {
+          SA.toast("Đã nạp " + topic.questions.length + " câu " + topic.title + "!");
+        }
+      }
+    });
+
+    wrap.appendChild(label);
+    wrap.appendChild(select);
+    quizInput.parentNode.insertBefore(wrap, quizInput);
+  }
+
+  if (!window.GRADE1_QUESTIONS) {
+    var script = document.createElement("script");
+    var isSubGame = window.location.pathname.indexOf("/games/") !== -1;
+    script.src = isSubGame ? "../../assets/js/grade1-questions.js" : "assets/js/grade1-questions.js";
+    script.onload = initGrade1Selector;
+    document.head.appendChild(script);
+  } else {
+    initGrade1Selector();
+  }
+});

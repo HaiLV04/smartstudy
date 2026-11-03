@@ -49,12 +49,9 @@
     font-size: 0.8rem; font-weight: 700; margin-bottom: 18px;
   }
 </style>
+<script src="assets/js/grade1-questions.js"></script>
 </head>
 <body>
-
-<div class="author-bar" style="background:linear-gradient(90deg,#4f46e5,#7c3aed,#db2777);color:#fff;text-align:center;font-size:.86rem;line-height:1.45;padding:8px 16px;font-weight:600;letter-spacing:.1px;">
-  🎓 Thiết kế và chia sẻ cùng giáo viên: <strong style="font-weight:800;">PGS.TS Lê Thanh Huy</strong> - Giảng viên Trường Đại học Sư phạm - Đại học Đà Nẵng
-</div>
 
 <header class="site-header">
   <div class="container">
@@ -63,12 +60,14 @@
       <span>StudyAI<small>Học liệu số cho giáo viên</small></span>
     </a>
     <nav class="main-nav">
+      <a href="#lop-1" class="nav-link" style="color:#059669; font-weight:800;">🌟 Đề Lớp 1</a>
       <a href="index.html" class="nav-link active">Trang chủ</a>
       <a href="#games" class="nav-link">Trò chơi</a>
       <a href="#about" class="nav-link">Giới thiệu</a>
       <a href="#faq" class="nav-link">Hướng dẫn</a>
     </nav>
     <div class="header-actions">
+      <button id="openExamsModalBtn" class="btn btn-primary" style="background:#f59e0b; border-color:#d97706; margin-right:10px; font-weight:700; cursor:pointer;">📚 Kho Đề Thi Lớp 1-5</button>
       <a href="#games" class="btn btn-primary">Bắt đầu ngay</a>
     </div>
   </div>
@@ -91,6 +90,161 @@
     </div>
   </div>
 </section>
+
+<!-- ============================================================
+     BỘ CÂU HỎI & ĐỀ THI LỚP 1 (CHUẨN GDPT 2018)
+     ============================================================ -->
+<section id="lop-1" style="background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 100%); border-top: 2px solid #a7f3d0; border-bottom: 2px solid #cbd5e1; padding: 48px 0;">
+  <div class="container">
+    <div style="text-align: center; max-width: 800px; margin: 0 auto 36px;">
+      <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; font-size:0.85rem; font-weight:800; padding:6px 16px; border-radius:999px; border:1px solid #86efac; margin-bottom:12px;">
+        🌟 CHUYÊN ĐỀ ĐẶC BIỆT DÀNH CHO TIỂU HỌC
+      </span>
+      <h2 style="font-size: 2.1rem; font-weight: 900; color: #0f172a; margin: 0 0 12px; letter-spacing: -0.5px;">
+        Bộ Câu Hỏi &amp; Đề Thi Lớp 1 Có Sẵn
+      </h2>
+      <p style="font-size: 1.05rem; color: #475569; margin: 0; line-height: 1.6;">
+        Hơn <strong>260+ câu hỏi trắc nghiệm</strong> được biên soạn chuẩn theo Chương trình GDPT 2018. Chọn chủ đề để <strong>chơi ngay</strong> trên các trò chơi hoặc <strong>sao chép 1 chạm</strong>!
+      </p>
+
+      <!-- Grade 1 Filter Tabs -->
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; flex-wrap:wrap;" id="grade1FilterTabs">
+        <button class="g1-tab active" data-subject="all" style="padding:8px 18px; border-radius:999px; border:none; font-weight:700; font-size:0.88rem; cursor:pointer; background:#059669; color:#fff; transition:all 0.2s;">Tất cả (16 chủ đề)</button>
+        <button class="g1-tab" data-subject="Toán" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">➕ Toán 1 (5 chủ đề)</button>
+        <button class="g1-tab" data-subject="Tiếng Việt" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">📖 Tiếng Việt 1 (4 chủ đề)</button>
+        <button class="g1-tab" data-subject="Khoa học" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🌿 TN &amp; XH 1 (4 chủ đề)</button>
+        <button class="g1-tab" data-subject="Tiếng Anh" style="padding:8px 18px; border-radius:999px; border:1px solid #cbd5e1; font-weight:700; font-size:0.88rem; cursor:pointer; background:#fff; color:#334155; transition:all 0.2s;">🇬🇧 Tiếng Anh 1 (3 chủ đề)</button>
+      </div>
+    </div>
+
+    <!-- Topics Grid -->
+    <div id="grade1CardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:20px;">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  function renderGrade1Section() {
+    var container = document.getElementById('grade1CardsContainer');
+    if (!container || !window.GRADE1_QUESTIONS) return;
+
+    var currentSubject = 'all';
+
+    function displayCards() {
+      var filtered = window.GRADE1_QUESTIONS.filter(function(t) {
+        return (currentSubject === 'all') || (t.subject === currentSubject);
+      });
+
+      container.innerHTML = '';
+      filtered.forEach(function(t) {
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#fff; border-radius:14px; border:1px solid #e2e8f0; padding:20px; display:flex; flex-direction:column; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:transform 0.2s, box-shadow 0.2s;';
+        card.onmouseenter = function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; };
+        card.onmouseleave = function() { card.style.transform = 'none'; card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; };
+
+        var badgeColor = t.subject === 'Toán' ? '#2563eb' : (t.subject === 'Tiếng Việt' ? '#dc2626' : (t.subject === 'Khoa học' ? '#16a34a' : '#9333ea'));
+        var badgeBg = t.subject === 'Toán' ? '#dbeafe' : (t.subject === 'Tiếng Việt' ? '#fee2e2' : (t.subject === 'Khoa học' ? '#dcfce7' : '#f3e8ff'));
+
+        var questionsText = t.questions.join('\n');
+
+        card.innerHTML = 
+          '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">' +
+            '<div style="display:flex; align-items:center; gap:8px;">' +
+              '<span style="font-size:1.6rem;">' + t.icon + '</span>' +
+              '<span style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:999px;">' + t.subject.toUpperCase() + ' 1</span>' +
+            '</div>' +
+            '<span style="font-size:0.8rem; font-weight:700; color:#64748b;">' + t.questions.length + ' câu hỏi</span>' +
+          '</div>' +
+          '<h3 style="margin:0 0 10px; font-size:1.1rem; font-weight:800; color:#0f172a; line-height:1.4;">' + t.title + '</h3>' +
+          '<details style="margin-bottom:16px; font-size:0.82rem; color:#64748b;">' +
+            '<summary style="cursor:pointer; color:#4f46e5; font-weight:700;">Xem trước 3 câu mẫu...</summary>' +
+            '<div style="margin-top:8px; padding:10px; background:#f8fafc; border-radius:8px; font-family:monospace; line-height:1.4;">' +
+              t.questions.slice(0, 3).join('<br>') +
+            '</div>' +
+          '</details>' +
+          '<div style="margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9; display:flex; flex-direction:column; gap:8px;">' +
+            '<button class="g1-copy-btn" style="width:100%; padding:9px; background:#f1f5f9; hover:background:#e2e8f0; border:1px solid #cbd5e1; border-radius:8px; font-size:0.85rem; font-weight:700; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">' +
+              '📋 Sao chép bộ câu hỏi' +
+            '</button>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="g1-play-btn" data-game="duavit" data-url="games/dua-vit/index.html" style="flex:1; padding:7px 4px; background:#0ea5e9; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🦆 Đua Vịt</button>' +
+              '<button class="g1-play-btn" data-game="vongquay" data-url="games/vong-quay/index.html" style="flex:1; padding:7px 4px; background:#8b5cf6; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🎡 Vòng Quay</button>' +
+              '<button class="g1-play-btn" data-game="keoco" data-url="games/keo-co/index.html" style="flex:1; padding:7px 4px; background:#f97316; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🪢 Kéo Co</button>' +
+              '<button class="g1-play-btn" data-game="chemhoaqua" data-url="games/chem-hoa-qua/index.html" style="flex:1; padding:7px 4px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🍉 Chém Quả</button>' +
+            '</div>' +
+          '</div>';
+
+        // Event copy
+        var copyBtn = card.querySelector('.g1-copy-btn');
+        copyBtn.addEventListener('click', function() {
+          navigator.clipboard.writeText(questionsText).then(function() {
+            copyBtn.textContent = '✅ Đã sao chép vào bộ nhớ tạm!';
+            copyBtn.style.background = '#dcfce7';
+            copyBtn.style.color = '#15803d';
+            setTimeout(function() {
+              copyBtn.textContent = '📋 Sao chép bộ câu hỏi';
+              copyBtn.style.background = '#f1f5f9';
+              copyBtn.style.color = '#334155';
+            }, 2000);
+            if (window.SA && SA.toast) SA.toast('Đã sao chép! Hãy dán vào ô Soạn câu hỏi của game.');
+          });
+        });
+
+        // Event direct play
+        card.querySelectorAll('.g1-play-btn').forEach(function(playBtn) {
+          playBtn.addEventListener('click', function() {
+            var gKey = playBtn.getAttribute('data-game');
+            var gUrl = playBtn.getAttribute('data-url');
+            // Save to localStorage for that game
+            try {
+              var parsedItems = [];
+              t.questions.forEach(function(line) {
+                var parts = line.split('|').map(function(s) { return s.trim(); });
+                if (parts.length >= 3) {
+                  parsedItems.push({ q: parts[0], options: parts.slice(1), correct: 0 });
+                }
+              });
+              localStorage.setItem('sa_quiz_' + gKey, JSON.stringify(parsedItems));
+            } catch(e) {}
+            // Navigate to game
+            window.location.href = gUrl;
+          });
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    displayCards();
+
+    // Tabs filter event
+    var tabs = document.querySelectorAll('#grade1FilterTabs .g1-tab');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(function(b) {
+          b.style.background = '#fff';
+          b.style.color = '#334155';
+          b.style.border = '1px solid #cbd5e1';
+        });
+        tab.style.background = '#059669';
+        tab.style.color = '#fff';
+        tab.style.border = 'none';
+        currentSubject = tab.getAttribute('data-subject');
+        displayCards();
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderGrade1Section);
+  } else {
+    renderGrade1Section();
+  }
+})();
+</script>
+
 
 <div class="filter-bar" id="games">
   <div class="container">
@@ -592,7 +746,7 @@
       <div>
         <h4>🎓 StudyAI</h4>
         <p style="font-size:.88rem; line-height:1.6;">Bộ sưu tập 48 trò chơi &amp; công cụ dạy học tương tác miễn phí dành cho giáo viên Việt Nam.</p>
-        <p style="font-size:.82rem; line-height:1.6; margin-top:10px; opacity:.85;">Cố vấn chuyên môn:<br><strong>PGS.TS Lê Thanh Huy</strong><br>Trường Đại học Sư phạm — Đại học Đà Nẵng</p>
+        
       </div>
       <div>
         <h4>Danh mục trò chơi</h4>
@@ -639,6 +793,133 @@
     });
     noResults.classList.toggle('show', q.length > 0 && !anyVisible);
   });
+})();
+</script>
+
+
+<!-- Modal Kho Ngân Hàng Đề Thi Lớp 1 - 5 -->
+<div id="examBankModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px);">
+  <div style="background:#fff; width:100%; max-width:850px; max-height:90vh; border-radius:16px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+    <div style="padding:16px 24px; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:#fff; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="margin:0; font-size:1.25rem; font-weight:800; display:flex; align-items:center; gap:8px;">📚 Ngân Hàng Đề Thi Chuẩn Lớp 1 - 5</h3>
+        <p style="margin:4px 0 0; font-size:0.85rem; opacity:0.9;">Bộ câu hỏi trắc nghiệm GDPT 2018 — Sao chép 1 chạm để dán ngay vào các trò chơi</p>
+      </div>
+      <button id="closeExamModalBtn" style="background:none; border:none; color:#fff; font-size:1.8rem; cursor:pointer; line-height:1;">&times;</button>
+    </div>
+
+    <div style="padding:14px 24px; border-bottom:1px solid #e2e8f0; display:flex; gap:10px; flex-wrap:wrap; background:#f8fafc;">
+      <select id="filterGrade" style="padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600; font-size:0.88rem;">
+        <option value="all">Tất cả các lớp (1 - 5)</option>
+        <option value="1">Lớp 1</option>
+        <option value="2">Lớp 2</option>
+        <option value="3">Lớp 3</option>
+        <option value="4">Lớp 4</option>
+        <option value="5">Lớp 5</option>
+      </select>
+      <select id="filterSubject" style="padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600; font-size:0.88rem;">
+        <option value="all">Tất cả môn học</option>
+        <option value="Toán">Toán</option>
+        <option value="Tiếng Việt">Tiếng Việt</option>
+        <option value="Khoa học">TN & XH / Khoa học</option>
+        <option value="Lịch sử">Lịch sử & Địa lý</option>
+      </select>
+      <span id="examCountBadge" style="margin-left:auto; align-self:center; font-size:0.85rem; font-weight:700; color:#64748b;"></span>
+    </div>
+
+    <div id="examListContainer" style="padding:20px 24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+      <!-- Exam cards rendered via JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+window.STUDYAI_EXAMS = [{"id":"exam_lop1_toan_hk1","slug":"de-kiem-tra-toan-lop-1-hoc-ki-1","title":"Đề Kiểm Tra Định Kỳ Môn Toán Lớp 1 - Học Kì 1","grade":1,"subject":"MATH","subjectName":"Toán học","semester":1,"durationMinutes":35,"totalPoints":10,"description":"Kiểm tra kiến thức đếm số, so sánh lớn bé, phép cộng trừ trong phạm vi 10 và nhận biết hình học phẳng cơ bản.","difficulty":"EASY","questions":[{"id":"q_t1_hk1_01","questionNumber":1,"content":"Số nào lớn nhất trong các số sau: 4, 7, 2, 9?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"9","isCorrect":true},{"key":"B","content":"7","isCorrect":false},{"key":"C","content":"4","isCorrect":false},{"key":"D","content":"2","isCorrect":false}],"explanation":"Trong dãy số 2, 4, 7, 9 thì số 9 đứng sau cùng nên 9 là số lớn nhất."},{"id":"q_t1_hk1_02","questionNumber":2,"content":"Kết quả của phép tính: 6 + 3 = ?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"9","isCorrect":true},{"key":"B","content":"8","isCorrect":false},{"key":"C","content":"10","isCorrect":false},{"key":"D","content":"7","isCorrect":false}],"explanation":"Ta có: 6 cộng thêm 3 đơn vị bằng 9."},{"id":"q_t1_hk1_03","questionNumber":3,"content":"Điền dấu thích hợp vào chỗ chấm: 8 - 3 ... 5","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"=","isCorrect":true},{"key":"B","content":">","isCorrect":false},{"key":"C","content":"<","isCorrect":false},{"key":"D","content":"+","isCorrect":false}],"explanation":"Ta tính vế trái: 8 - 3 = 5. So sánh 5 = 5 nên điền dấu =."},{"id":"q_t1_hk1_04","questionNumber":4,"content":"Hình bên dưới có 3 cạnh và 3 góc nhọn là hình gì?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"Hình tam giác","isCorrect":true},{"key":"B","content":"Hình vuông","isCorrect":false},{"key":"C","content":"Hình tròn","isCorrect":false},{"key":"D","content":"Hình chữ nhật","isCorrect":false}],"explanation":"Hình tam giác là hình có 3 cạnh và 3 góc (hoặc 3 đỉnh)."},{"id":"q_t1_hk1_05","questionNumber":5,"content":"Tổ Một có 5 bạn nữ và 4 bạn nam. Hỏi tổ Một có tất cả bao nhiêu bạn?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"9 bạn","isCorrect":true},{"key":"B","content":"8 bạn","isCorrect":false},{"key":"C","content":"10 bạn","isCorrect":false},{"key":"D","content":"1 bạn","isCorrect":false}],"explanation":"Phép tính: 5 + 4 = 9 bạn."},{"id":"q_t1_hk1_06","questionNumber":6,"content":"Số liền trước của số 10 là số nào?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"9","isCorrect":true},{"key":"B","content":"11","isCorrect":false},{"key":"C","content":"8","isCorrect":false},{"key":"D","content":"10","isCorrect":false}],"explanation":"Số liền trước của 10 là số đứng ngay trước 10, tức là 10 - 1 = 9."},{"id":"q_t1_hk1_07","questionNumber":7,"content":"Tìm số thích hợp điền vào ô trống: ... - 4 = 6","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"10","isCorrect":true},{"key":"B","content":"2","isCorrect":false},{"key":"C","content":"8","isCorrect":false},{"key":"D","content":"9","isCorrect":false}],"explanation":"Muốn tìm số bị trừ, ta lấy hiệu cộng với số trừ: 6 + 4 = 10."},{"id":"q_t1_hk1_08","questionNumber":8,"content":"Có bao nhiêu hình vuông trong một ô cửa sổ chữ nhật được chia làm 4 ô vuông nhỏ?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"4 hình vuông","isCorrect":true},{"key":"B","content":"5 hình vuông","isCorrect":false},{"key":"C","content":"6 hình vuông","isCorrect":false},{"key":"D","content":"3 hình vuông","isCorrect":false}],"explanation":"Có 4 hình vuông nhỏ riêng lẻ (khung ngoài là hình chữ nhật)."}]},{"id":"exam_lop1_tv_hk1","slug":"de-kiem-tra-tieng-viet-lop-1-chinh-ta-am-van","title":"Đề Kiểm Tra Tiếng Việt Lớp 1 - m Vần & Chính Tả","grade":1,"subject":"VIETNAMESE","subjectName":"Tiếng Việt","semester":1,"durationMinutes":30,"totalPoints":10,"description":"Đánh giá kỹ năng nhận diện âm vần, phân biệt quy tắc chính tả c/k, g/gh, ng/ngh và đọc hiểu câu đơn giản.","difficulty":"EASY","questions":[{"id":"q_tv1_01","questionNumber":1,"content":"Chọn 'c' hoặc 'k' để điền vào chỗ trống: \"...on cá\"","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"c","isCorrect":true},{"key":"B","content":"k","isCorrect":false},{"key":"C","content":"q","isCorrect":false},{"key":"D","content":"ch","isCorrect":false}],"explanation":"Quy tắc: m 'k' chỉ đi với các âm i, e, ê. Trước âm 'o' ta viết 'c'."},{"id":"q_tv1_02","questionNumber":2,"content":"Chọn 'ng' hoặc 'ngh' để điền vào chỗ trống: \"...ỉ hè\"","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"ngh","isCorrect":true},{"key":"B","content":"ng","isCorrect":false},{"key":"C","content":"gh","isCorrect":false},{"key":"D","content":"nh","isCorrect":false}],"explanation":"Đứng trước âm 'i', 'e', 'ê' ta phải viết là 'ngh'."},{"id":"q_tv1_03","questionNumber":3,"content":"Từ nào dưới đây viết ĐÚNG chính tả?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"tre xanh","isCorrect":true},{"key":"B","content":"che xanh","isCorrect":false},{"key":"C","content":"te xanh","isCorrect":false},{"key":"D","content":"troi xanh","isCorrect":false}],"explanation":"Cây tre viết đúng là 'tre' với âm tr."},{"id":"q_tv1_04","questionNumber":4,"content":"Tiếng \"hoa\" gồm những bộ phận nào?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"m đầu h, âm đệm o, âm chính a","isCorrect":true},{"key":"B","content":"m đầu h và âm chính a","isCorrect":false},{"key":"C","content":"m đầu o và âm chính a","isCorrect":false},{"key":"D","content":"Chỉ có âm đầu h","isCorrect":false}],"explanation":"Trong tiếng 'hoa', h là âm đầu, o là âm đệm, a là âm chính."},{"id":"q_tv1_05","questionNumber":5,"content":"Câu nào dưới đây thể hiện lời cảm ơn đúng chuẩn mực?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"Em cảm ơn cô ạ!","isCorrect":true},{"key":"B","content":"Được rồi đấy!","isCorrect":false},{"key":"C","content":"Em chào cô!","isCorrect":false},{"key":"D","content":"Cho em xin thêm!","isCorrect":false}],"explanation":"Lời cảm ơn lễ phép cần có từ 'ạ' và xưng hô rõ ràng: 'Em cảm ơn cô ạ!'."}]},{"id":"exam_lop2_toan_hk1","slug":"de-kiem-tra-toan-lop-2-bang-nhan-chia","title":"Đề Kiểm Tra Môn Toán Lớp 2 - Bảng Nhân Chia & Đo Lường","grade":2,"subject":"MATH","subjectName":"Toán học","semester":1,"durationMinutes":40,"totalPoints":10,"description":"Kiểm tra kỹ năng tính toán phép nhân chia 2 và 5, cộng trừ có nhớ trong phạm vi 100, đo độ dài đơn vị dm, m.","difficulty":"MEDIUM","questions":[{"id":"q_t2_01","questionNumber":1,"content":"Kết quả của phép tính: 5 x 7 = ?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"35","isCorrect":true},{"key":"B","content":"30","isCorrect":false},{"key":"C","content":"40","isCorrect":false},{"key":"D","content":"25","isCorrect":false}],"explanation":"Theo bảng nhân 5: 5 x 7 = 35."},{"id":"q_t2_02","questionNumber":2,"content":"Có 18 bông hoa cắm đều vào 2 bình. Hỏi mỗi bình có bao nhiêu bông hoa?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"9 bông","isCorrect":true},{"key":"B","content":"8 bông","isCorrect":false},{"key":"C","content":"7 bông","isCorrect":false},{"key":"D","content":"10 bông","isCorrect":false}],"explanation":"Phép tính chia đều: 18 : 2 = 9 bông hoa."},{"id":"q_t2_03","questionNumber":3,"content":"1 mét (m) đổi ra đề-xi-mét (dm) bằng bao nhiêu?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"10 dm","isCorrect":true},{"key":"B","content":"100 dm","isCorrect":false},{"key":"C","content":"1 dm","isCorrect":false},{"key":"D","content":"1000 dm","isCorrect":false}],"explanation":"Đơn vị đo độ dài: 1 m = 10 dm = 100 cm."},{"id":"q_t2_04","questionNumber":4,"content":"Kết quả của phép cộng có nhớ: 48 + 37 = ?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"85","isCorrect":true},{"key":"B","content":"75","isCorrect":false},{"key":"C","content":"84","isCorrect":false},{"key":"D","content":"95","isCorrect":false}],"explanation":"8 + 7 = 15 viết 5 nhớ 1. 4 + 3 = 7 thêm 1 bằng 8. Kết quả là 85."},{"id":"q_t2_05","questionNumber":5,"content":"Tìm y, biết: y - 26 = 45","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"y = 71","isCorrect":true},{"key":"B","content":"y = 61","isCorrect":false},{"key":"C","content":"y = 19","isCorrect":false},{"key":"D","content":"y = 81","isCorrect":false}],"explanation":"y = 45 + 26 = 71."}]},{"id":"exam_lop2_tv_hk1","slug":"de-kiem-tra-tieng-viet-lop-2-tu-loai-cau-kieu","title":"Đề Kiểm Tra Tiếng Việt Lớp 2 - Từ Loại & Các Kiểu Câu","grade":2,"subject":"VIETNAMESE","subjectName":"Tiếng Việt","semester":1,"durationMinutes":35,"totalPoints":10,"description":"Đánh giá khả năng phân loại từ chỉ sự vật, hoạt động, đặc điểm và nhận diện các kiểu câu Ai là gì?, Ai làm gì?, Ai thế nào?.","difficulty":"MEDIUM","questions":[{"id":"q_tv2_01","questionNumber":1,"content":"Nhóm từ nào sau đây gồm toàn các từ chỉ HOẠT ĐỘNG?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"đọc sách, múa hát, chạy nhảy","isCorrect":true},{"key":"B","content":"thầy giáo, trường học, bút mực","isCorrect":false},{"key":"C","content":"chăm chỉ, ngoan ngoãn, siêng năng","isCorrect":false},{"key":"D","content":"bông hoa, mặt trời, ngôi sao","isCorrect":false}],"explanation":"Các từ đọc sách, múa hát, chạy nhảy đều diễn tả hành động của con người."},{"id":"q_tv2_02","questionNumber":2,"content":"Câu: \"Bác nông dân đang cày ruộng.\" thuộc kiểu câu nào?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"Ai làm gì?","isCorrect":true},{"key":"B","content":"Ai là gì?","isCorrect":false},{"key":"C","content":"Ai thế nào?","isCorrect":false},{"key":"D","content":"Câu cầu khiến","isCorrect":false}],"explanation":"'đang cày ruộng' là hoạt động nên câu thuộc mẫu 'Ai làm gì?'."},{"id":"q_tv2_03","questionNumber":3,"content":"Dấu câu nào thích hợp điền vào cuối câu: \"Hôm nay lớp mình học bài gì vậy nhỉ...\"","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"Dấu chấm hỏi (?)","isCorrect":true},{"key":"B","content":"Dấu chấm (.)","isCorrect":false},{"key":"C","content":"Dấu chấm than (!)","isCorrect":false},{"key":"D","content":"Dấu hai chấm (:)","isCorrect":false}],"explanation":"Đây là câu hỏi nên cuối câu phải đặt dấu chấm hỏi."}]},{"id":"exam_lop3_toan_hk1","slug":"de-kiem-tra-toan-lop-3-chu-vi-dien-tich","title":"Đề Kiểm Tra Môn Toán Lớp 3 - Chu Vi, Diện Tích & Biểu Thức","grade":3,"subject":"MATH","subjectName":"Toán học","semester":1,"durationMinutes":40,"totalPoints":10,"description":"Đánh giá công thức tính chu vi và diện tích hình vuông, hình chữ nhật; giá trị biểu thức và bảng nhân chia.","difficulty":"MEDIUM","questions":[{"id":"q_t3_01","questionNumber":1,"content":"Một mảnh vườn hình chữ nhật có chiều dài 9 m, chiều rộng 6 m. Diện tích mảnh vườn là:","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"54 m²","isCorrect":true},{"key":"B","content":"30 m²","isCorrect":false},{"key":"C","content":"15 m²","isCorrect":false},{"key":"D","content":"45 m²","isCorrect":false}],"explanation":"Diện tích hình chữ nhật = dài x rộng = 9 x 6 = 54 m²."},{"id":"q_t3_02","questionNumber":2,"content":"Một hình vuông có chu vi là 36 cm. Độ dài cạnh của hình vuông đó là:","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"9 cm","isCorrect":true},{"key":"B","content":"6 cm","isCorrect":false},{"key":"C","content":"8 cm","isCorrect":false},{"key":"D","content":"12 cm","isCorrect":false}],"explanation":"Chu vi hình vuông = cạnh x 4, nên cạnh = Chu vi : 4 = 36 : 4 = 9 cm."},{"id":"q_t3_03","questionNumber":3,"content":"Tính giá trị biểu thức: 120 - 20 x 4","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"40","isCorrect":true},{"key":"B","content":"400","isCorrect":false},{"key":"C","content":"80","isCorrect":false},{"key":"D","content":"100","isCorrect":false}],"explanation":"Thực hiện nhân trước: 20 x 4 = 80. Sau đó 120 - 80 = 40."}]},{"id":"exam_lop3_science_hk1","slug":"de-kiem-tra-tnxh-khoa-hoc-lop-3","title":"Đề Kiểm Tra Tự Nhiên & Xã Hội Lớp 3 - Cơ Thể Người & Bầu Trời","grade":3,"subject":"SCIENCE","subjectName":"Khoa học & TNXH","semester":1,"durationMinutes":35,"totalPoints":10,"description":"Đánh giá hiểu biết về cơ quan tuần hoàn, cơ quan hô hấp, cơ quan thần kinh và Trái Đất trong hệ Mặt Trời.","difficulty":"EASY","questions":[{"id":"q_kh3_01","questionNumber":1,"content":"Cơ quan tuần hoàn trong cơ thể gồm những bộ phận nào?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"Tim và các mạch máu","isCorrect":true},{"key":"B","content":"Dạ dày và ruột","isCorrect":false},{"key":"C","content":"Phổi và khí quản","isCorrect":false},{"key":"D","content":"Não và tủy sống","isCorrect":false}],"explanation":"Cơ quan tuần hoàn gồm có tim và mạng lưới các mạch máu."},{"id":"q_kh3_02","questionNumber":2,"content":"Trái Đất quay một vòng quanh Mặt Trời mất khoảng thời gian bao lâu?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"1 năm (365 ngày hoặc 366 ngày)","isCorrect":true},{"key":"B","content":"24 giờ (1 ngày đêm)","isCorrect":false},{"key":"C","content":"1 tháng (30 ngày)","isCorrect":false},{"key":"D","content":"100 ngày","isCorrect":false}],"explanation":"Trái Đất tự quay quanh mình hết 24 giờ, và quay một vòng quanh Mặt Trời hết 1 năm."}]},{"id":"exam_lop4_toan_hk1","slug":"de-kiem-tra-toan-lop-4-phan-so-trung-binh-cong","title":"Đề Kiểm Tra Môn Toán Lớp 4 - Phân Số, Trung Bình Cộng & Hình Học","grade":4,"subject":"MATH","subjectName":"Toán học","semester":1,"durationMinutes":45,"totalPoints":10,"description":"Khảo sát kiến thức phân số, rút gọn phân số, tính trung bình cộng, diện tích hình thoi và hình bình hành.","difficulty":"HARD","questions":[{"id":"q_t4_01","questionNumber":1,"content":"Rút gọn phân số 24/36 về dạng phân số tối giản được:","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"2/3","isCorrect":true},{"key":"B","content":"4/6","isCorrect":false},{"key":"C","content":"12/18","isCorrect":false},{"key":"D","content":"3/4","isCorrect":false}],"explanation":"Chia cả tử và mẫu cho ước chung lớn nhất là 12: 24:12 = 2, 36:12 = 3. Kết quả là 2/3."},{"id":"q_t4_02","questionNumber":2,"content":"Tìm số trung bình cộng của ba số: 25, 35 và 45.","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"35","isCorrect":true},{"key":"B","content":"30","isCorrect":false},{"key":"C","content":"40","isCorrect":false},{"key":"D","content":"105","isCorrect":false}],"explanation":"Trung bình cộng = (25 + 35 + 45) : 3 = 105 : 3 = 35."},{"id":"q_t4_03","questionNumber":3,"content":"Diện tích hình thoi có độ dài hai đường chéo là 8 cm và 6 cm bằng bao nhiêu?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"24 cm²","isCorrect":true},{"key":"B","content":"48 cm²","isCorrect":false},{"key":"C","content":"14 cm²","isCorrect":false},{"key":"D","content":"28 cm²","isCorrect":false}],"explanation":"Diện tích hình thoi = (đường chéo 1 x đường chéo 2) : 2 = (8 x 6) : 2 = 24 cm²."}]},{"id":"exam_lop4_history_hk1","slug":"de-kiem-tra-lich-su-dia-ly-lop-4","title":"Đề Kiểm Tra Lịch Sử & Địa Lý Lớp 4 - Các Triều Đại & Vùng Miền Đất Nước","grade":4,"subject":"HISTORY_GEOGRAPHY","subjectName":"Lịch sử & Địa lý","semester":1,"durationMinutes":40,"totalPoints":10,"description":"Đánh giá các sự kiện lịch sử dựng nước giữ nước và đặc điểm tự nhiên các vùng Trung du, Tây Nguyên, Đồng bằng sông Hồng.","difficulty":"MEDIUM","questions":[{"id":"q_ls4_01","questionNumber":1,"content":"Chiến thắng trên sông Bạch Đằng năm 938 do ai lãnh đạo đã chấm dứt hơn 1000 năm Bắc thuộc?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"EASY","options":[{"key":"A","content":"Ngô Quyền","isCorrect":true},{"key":"B","content":"Đinh Bộ Lĩnh","isCorrect":false},{"key":"C","content":"Hai Bà Trưng","isCorrect":false},{"key":"D","content":"Trần Hưng Đạo","isCorrect":false}],"explanation":"Năm 938, Ngô Quyền đã cắm cọc ngầm trên sông Bạch Đằng đánh tan quân xâm lược Nam Hán."},{"id":"q_dl4_01","questionNumber":2,"content":"Đặc điểm nổi bật của địa hình vùng Tây Nguyên là gì?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"Gồm các cao nguyên xếp tầng rộng lớn với đất đỏ ba-dan màu mỡ","isCorrect":true},{"key":"B","content":"Đồng bằng bằng phẳng thẳng cánh cò bay","isCorrect":false},{"key":"C","content":"Nhiều đồi hình bát úp","isCorrect":false},{"key":"D","content":"Vùng đầm lầy ngập mặn","isCorrect":false}],"explanation":"Tây Nguyên là xứ sở của các cao nguyên xếp tầng (Kon Tum, Pleiku, Đắk Lắk, Lâm Viên...)."}]},{"id":"exam_lop5_toan_hk1","slug":"de-kiem-tra-toan-lop-5-so-thap-phan-chuyen-dong","title":"Đề Kiểm Tra Môn Toán Lớp 5 - Số Thập Phân, % & Toán Chuyển Động Đều","grade":5,"subject":"MATH","subjectName":"Toán học","semester":1,"durationMinutes":45,"totalPoints":10,"description":"Đánh giá khả năng tính toán số thập phân, tỉ số phần trăm, diện tích hình tròn, thể tích hình lập phương và toán chuyển động.","difficulty":"HARD","questions":[{"id":"q_t5_01","questionNumber":1,"content":"Viết phân số 3/5 dưới dạng tỉ số phần trăm là:","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"60%","isCorrect":true},{"key":"B","content":"35%","isCorrect":false},{"key":"C","content":"30%","isCorrect":false},{"key":"D","content":"75%","isCorrect":false}],"explanation":"3/5 = 0,6 = 60%."},{"id":"q_t5_02","questionNumber":2,"content":"Một người đi xe máy đi được quãng đường 105 km trong 2,5 giờ. Vận tốc của người đó là:","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"42 km/h","isCorrect":true},{"key":"B","content":"40 km/h","isCorrect":false},{"key":"C","content":"45 km/h","isCorrect":false},{"key":"D","content":"50 km/h","isCorrect":false}],"explanation":"Công thức v = s : t = 105 : 2,5 = 42 km/h."},{"id":"q_t5_03","questionNumber":3,"content":"Một hình tròn có đường kính d = 4 cm. Diện tích của hình tròn đó là:","type":"MULTIPLE_CHOICE","points":1,"difficulty":"HARD","options":[{"key":"A","content":"12,56 cm²","isCorrect":true},{"key":"B","content":"50,24 cm²","isCorrect":false},{"key":"C","content":"6,28 cm²","isCorrect":false},{"key":"D","content":"25,12 cm²","isCorrect":false}],"explanation":"Bán kính r = 4 : 2 = 2 cm. Diện tích S = r x r x 3,14 = 2 x 2 x 3,14 = 12,56 cm²."}]},{"id":"exam_lop5_tv_hk1","slug":"de-kiem-tra-tieng-viet-lop-5-tu-dong-am-dong-nghia","title":"Đề Kiểm Tra Tiếng Việt Lớp 5 - Từ Đồng m, Đồng Nghĩa, Trái Nghĩa & Quan Hệ Từ","grade":5,"subject":"VIETNAMESE","subjectName":"Tiếng Việt","semester":1,"durationMinutes":40,"totalPoints":10,"description":"Phân biệt hiện tượng từ đồng âm, từ đồng nghĩa, từ trái nghĩa, từ nhiều nghĩa và cách nối các vế câu ghép bằng quan hệ từ.","difficulty":"HARD","questions":[{"id":"q_tv5_01","questionNumber":1,"content":"Trong hai câu: \"Con ruồi đậu mâm xôi đậu.\" và \"Thi đậu đại học.\", các từ 'đậu' có quan hệ gì với nhau?","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"Từ đồng âm","isCorrect":true},{"key":"B","content":"Từ nhiều nghĩa","isCorrect":false},{"key":"C","content":"Từ đồng nghĩa","isCorrect":false},{"key":"D","content":"Từ trái nghĩa","isCorrect":false}],"explanation":"Các từ 'đậu' (hành động đỗ lại), 'đậu' (hạt đỗ/đậu), 'đậu' (thi đỗ/đạt) phát âm giống hệt nhau nhưng nghĩa hoàn toàn khác nhau không liên quan gì đến nhau, nên đó là từ đồng âm."},{"id":"q_tv5_02","questionNumber":2,"content":"Chọn cặp quan hệ từ thích hợp điền vào câu: \"... trời mưa to ... chúng em vẫn đến trường đúng giờ.\"","type":"MULTIPLE_CHOICE","points":1,"difficulty":"MEDIUM","options":[{"key":"A","content":"Tuy ... nhưng ... (Tương phản)","isCorrect":true},{"key":"B","content":"Vì ... nên ... (Nguyên nhân - kết quả)","isCorrect":false},{"key":"C","content":"Nếu ... thì ... (Giả thiết - kết quả)","isCorrect":false},{"key":"D","content":"Càng ... càng ... (Tăng tiến)","isCorrect":false}],"explanation":"Hai vế câu có ý nghĩa đối lập tương phản nhau nên dùng cặp quan hệ từ 'Tuy ... nhưng ...'."}]}];
+
+(function() {
+  var modal = document.getElementById('examBankModal');
+  var openBtn = document.getElementById('openExamsModalBtn');
+  var closeBtn = document.getElementById('closeExamModalBtn');
+  var gradeSelect = document.getElementById('filterGrade');
+  var subjectSelect = document.getElementById('filterSubject');
+  var listContainer = document.getElementById('examListContainer');
+  var countBadge = document.getElementById('examCountBadge');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function() {
+      modal.style.display = 'flex';
+      renderExams();
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      modal.style.display = 'none';
+    });
+  }
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  if (gradeSelect) gradeSelect.addEventListener('change', renderExams);
+  if (subjectSelect) subjectSelect.addEventListener('change', renderExams);
+
+  function renderExams() {
+    var g = gradeSelect.value;
+    var s = subjectSelect.value;
+    var filtered = window.STUDYAI_EXAMS.filter(function(ex) {
+      var matchG = (g === 'all') || (ex.grade === parseInt(g));
+      var matchS = (s === 'all') || (ex.subject.indexOf(s) !== -1 || (s === 'Khoa học' && ex.subject.indexOf('Tự nhiên') !== -1));
+      return matchG && matchS;
+    });
+
+    countBadge.textContent = filtered.length + ' bộ đề thi';
+    listContainer.innerHTML = '';
+
+    filtered.forEach(function(ex) {
+      var card = document.createElement('div');
+      card.style.cssText = 'border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; transition:all 0.2s;';
+      
+      var lines = ex.questions.map(function(q) {
+        var correctOpt = q.options.find(function(o) { return o.isCorrect; }) || q.options[0];
+        var wrongOpts = q.options.filter(function(o) { return !o.isCorrect; });
+        return [q.question, correctOpt.text].concat(wrongOpts.map(function(w) { return w.text; })).join(' | ');
+      }).join('\n');
+
+      card.innerHTML = 
+        '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">' +
+          '<div>' +
+            '<span style="background:#e0e7ff; color:#4338ca; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:999px;">LỚP ' + ex.grade + '</span> ' +
+            '<span style="background:#fef3c7; color:#b45309; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:999px; margin-left:4px;">' + ex.subject + '</span>' +
+            '<h4 style="margin:6px 0 2px; font-size:1.05rem; font-weight:700; color:#1e293b;">' + ex.title + '</h4>' +
+            '<p style="margin:0; font-size:0.82rem; color:#64748b;">' + ex.questions.length + ' câu hỏi trắc nghiệm • ' + ex.durationMinutes + ' phút</p>' +
+          '</div>' +
+          '<button class="copy-studyai-btn" style="background:#10b981; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">' +
+            '📋 Sao chép đề' +
+          '</button>' +
+        '</div>' +
+        '<details style="font-size:0.85rem; color:#475569; margin-top:8px;">' +
+          '<summary style="cursor:pointer; font-weight:600; color:#6366f1;">Xem trước ' + ex.questions.length + ' câu hỏi...</summary>' +
+          '<div style="margin-top:8px; padding:10px; background:#f8fafc; border-radius:8px; max-height:160px; overflow-y:auto; font-family:monospace; font-size:0.78rem; white-space:pre-wrap; line-height:1.4;">' +
+            lines +
+          '</div>' +
+        '</details>';
+
+      var copyBtn = card.querySelector('.copy-studyai-btn');
+      copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(lines).then(function() {
+          copyBtn.textContent = '✅ Đã sao chép!';
+          copyBtn.style.background = '#059669';
+          setTimeout(function() {
+            copyBtn.textContent = '📋 Sao chép đề';
+            copyBtn.style.background = '#10b981';
+          }, 2000);
+          alert('Đã sao chép thành công bộ đề "' + ex.title + '"!\n\nBạn chỉ cần vào bất kỳ trò chơi nào (như Đua Vịt, Vòng Quay, Kéo Co, Chém Hoa Quả...), bấm "Soạn câu hỏi" và Dán (Ctrl+V) vào là chơi được ngay!');
+        });
+      });
+
+      listContainer.appendChild(card);
+    });
+  }
 })();
 </script>
 
