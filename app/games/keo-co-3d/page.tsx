@@ -6,7 +6,9 @@ import { sound } from '@/lib/audio';
 import { Storage } from '@/lib/storage';
 import { Question, QUESTION_BANKS } from '@/data/questionBanks';
 import QuestionBankModal from '@/components/QuestionBankModal';
-import { ArrowLeft, BookOpen, RefreshCw, Trophy, CheckCircle2, XCircle } from 'lucide-react';
+import GameSettingsModal from '@/components/GameSettingsModal';
+import { GameSettingsManager } from '@/lib/gameSettings';
+import { ArrowLeft, BookOpen, RefreshCw, Trophy, CheckCircle2, XCircle, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 export default function KeoCo3DPage() {
@@ -17,17 +19,39 @@ export default function KeoCo3DPage() {
   const [balance, setBalance] = useState<number>(0);
   const balanceRef = useRef<number>(0);
 
+  const [teamRed, setTeamRed] = useState<string>("Đội Đỏ");
+  const [teamBlue, setTeamBlue] = useState<string>("Đội Xanh");
+
   const [currentTurn, setCurrentTurn] = useState<'red' | 'blue'>('red');
   const [questions, setQuestions] = useState<Question[]>(QUESTION_BANKS[0].subjects[0].questions);
   const [quizTitle, setQuizTitle] = useState<string>("Toán Lớp 1 - Cơ Bản");
   const [activeQuestion, setActiveQuestion] = useState<Question>(QUESTION_BANKS[0].subjects[0].questions[0]);
   const [winner, setWinner] = useState<'red' | 'blue' | null>(null);
   const [answeredState, setAnsweredState] = useState<{ selectedIndex: number; isCorrect: boolean } | null>(null);
+
   const [isBankModalOpen, setIsBankModalOpen] = useState<boolean>(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
+
+  const loadSettings = () => {
+    const s = GameSettingsManager.getSettings();
+    setTeamRed(s.teamRedName);
+    setTeamBlue(s.teamBlueName);
+  };
+
+  useEffect(() => {
+    loadSettings();
+    const handleSettingsUpdated = () => loadSettings();
+    window.addEventListener('smartstudy_settings_updated', handleSettingsUpdated);
+    return () => window.removeEventListener('smartstudy_settings_updated', handleSettingsUpdated);
+  }, []);
 
   useEffect(() => {
     const currentMount = mountRef.current;
     if (!currentMount) return;
+
+    while (currentMount.firstChild) {
+      currentMount.removeChild(currentMount.firstChild);
+    }
 
     const width = currentMount.clientWidth;
     const height = currentMount.clientHeight;
@@ -43,7 +67,6 @@ export default function KeoCo3DPage() {
     renderer.shadowMap.enabled = true;
     currentMount.appendChild(renderer.domElement);
 
-    // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambient);
 
@@ -51,14 +74,12 @@ export default function KeoCo3DPage() {
     dirLight.position.set(5, 10, 8);
     scene.add(dirLight);
 
-    // 1. Stadium Ground
     const groundGeo = new THREE.PlaneGeometry(16, 8);
     const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    // Center dividing line
     const lineGeo = new THREE.PlaneGeometry(0.15, 8);
     const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const line = new THREE.Mesh(lineGeo, lineMat);
@@ -66,7 +87,6 @@ export default function KeoCo3DPage() {
     line.position.y = 0.01;
     scene.add(line);
 
-    // Boundary marks
     const markRed = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 8), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
     markRed.rotation.x = -Math.PI / 2;
     markRed.position.set(-3.5, 0.01, 0);
@@ -77,11 +97,9 @@ export default function KeoCo3DPage() {
     markBlue.position.set(3.5, 0.01, 0);
     scene.add(markBlue);
 
-    // 2. Rope Group
     const ropeGroup = new THREE.Group();
     ropeGroupRef.current = ropeGroup;
 
-    // Segmented 3D Rope Cylinder
     const ropeGeo = new THREE.CylinderGeometry(0.12, 0.12, 12, 16);
     const ropeMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.9 });
     const rope = new THREE.Mesh(ropeGeo, ropeMat);
@@ -89,7 +107,6 @@ export default function KeoCo3DPage() {
     rope.position.y = 1;
     ropeGroup.add(rope);
 
-    // Center red ribbon marker on rope
     const ribbonGeo = new THREE.SphereGeometry(0.25, 16, 16);
     const ribbonMat = new THREE.MeshStandardMaterial({ color: 0xd90429, roughness: 0.2 });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
@@ -97,7 +114,6 @@ export default function KeoCo3DPage() {
     ropeGroup.add(ribbon);
     scene.add(ropeGroup);
 
-    // 3. Team Characters (Red Team on Left, Blue Team on Right)
     const createTeam = (isRed: boolean) => {
       const teamGroup = new THREE.Group();
       const color = isRed ? 0xef4444 : 0x3b82f6;
@@ -119,19 +135,17 @@ export default function KeoCo3DPage() {
 
         const offsetX = isRed ? -(i * 1.1) : (i * 1.1);
         char.position.set(baseX + offsetX, 0, (i % 2 === 0 ? 0.3 : -0.3));
-        // Lean backwards while pulling
         char.rotation.z = isRed ? 0.2 : -0.2;
         teamGroup.add(char);
       }
       return teamGroup;
     };
 
-    const teamRed = createTeam(true);
-    const teamBlue = createTeam(false);
-    scene.add(teamRed);
-    scene.add(teamBlue);
+    const teamRedGroup = createTeam(true);
+    const teamBlueGroup = createTeam(false);
+    scene.add(teamRedGroup);
+    scene.add(teamBlueGroup);
 
-    // Animation loop
     let animId: number;
     let clock = new THREE.Clock();
 
@@ -139,18 +153,16 @@ export default function KeoCo3DPage() {
       animId = requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      // Smooth rope movement according to balance (-50 to +50 scaled to -3.5 to +3.5)
       const targetX = (balanceRef.current / 50) * 3.5;
       if (ropeGroupRef.current) {
         ropeGroupRef.current.position.x += (targetX - ropeGroupRef.current.position.x) * 0.1;
-        ropeGroupRef.current.position.y = 1 + Math.sin(time * 6) * 0.05; // slight rope wobble
+        ropeGroupRef.current.position.y = 1 + Math.sin(time * 6) * 0.05;
       }
 
-      // Teams bounce / pull rhythmically
-      teamRed.children.forEach((c, idx) => {
+      teamRedGroup.children.forEach((c, idx) => {
         c.position.y = Math.sin(time * 5 + idx) * 0.06;
       });
-      teamBlue.children.forEach((c, idx) => {
+      teamBlueGroup.children.forEach((c, idx) => {
         c.position.y = Math.sin(time * 5 + idx) * 0.06;
       });
 
@@ -186,7 +198,6 @@ export default function KeoCo3DPage() {
     if (isCorrect) {
       sound.playCorrect();
 
-      // Pull rope towards current team
       const pullAmount = currentTurn === 'red' ? -15 : 15;
       const newBal = Math.max(-50, Math.min(50, balance + pullAmount));
       setBalance(newBal);
@@ -234,12 +245,20 @@ export default function KeoCo3DPage() {
           <h1 className="text-lg font-bold flex items-center gap-2">
             <span>🪢 Kéo Co Tri Thức 3D</span>
             <span className="text-xs bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/30">
-              Đấu Đội 2 Phe
+              {teamRed} vs {teamBlue}
             </span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5"
+          >
+            <Settings className="w-4 h-4" />
+            Cài Đặt Đội & Thời Gian
+          </button>
+
           <button
             onClick={() => setIsBankModalOpen(true)}
             className="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-600/50 transition flex items-center gap-1.5"
@@ -247,6 +266,7 @@ export default function KeoCo3DPage() {
             <BookOpen className="w-4 h-4" />
             Đổi Bộ Đề (Lớp 1-5)
           </button>
+
           <button
             onClick={resetGame}
             className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:text-white text-slate-400 transition"
@@ -264,18 +284,17 @@ export default function KeoCo3DPage() {
               winner === 'red' ? 'bg-rose-500 text-white' : 'bg-blue-500 text-white'
             }`}>
               <Trophy className="w-7 h-7" />
-              CHÚC MỪNG {winner === 'red' ? 'ĐỘI ĐỎ' : 'ĐỘI XANH'} CHIẾN THẮNG!
+              CHÚC MỪNG {winner === 'red' ? teamRed.toUpperCase() : teamBlue.toUpperCase()} CHIẾN THẮNG!
             </div>
           )}
 
           <div ref={mountRef} className="w-full aspect-[4/3] max-h-[500px]" />
 
-          {/* Tension Balance Bar */}
           <div className="w-full max-w-md mt-3 pt-3 border-t border-slate-800">
             <div className="flex justify-between text-xs font-bold mb-1">
-              <span className="text-rose-400">ĐỘI ĐỎ ({50 - balance}%)</span>
+              <span className="text-rose-400">{teamRed} ({50 - balance}%)</span>
               <span className="text-slate-400">THẾ TRẬN</span>
-              <span className="text-blue-400">ĐỘI XANH ({50 + balance}%)</span>
+              <span className="text-blue-400">{teamBlue} ({50 + balance}%)</span>
             </div>
             <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex relative">
               <div 
@@ -291,7 +310,6 @@ export default function KeoCo3DPage() {
           </div>
         </div>
 
-        {/* Right Arena */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           <div className={`p-4 rounded-2xl glass-card flex items-center justify-between border ${
             currentTurn === 'red' ? 'border-rose-500/50 bg-rose-950/20' : 'border-blue-500/50 bg-blue-950/20'
@@ -299,7 +317,7 @@ export default function KeoCo3DPage() {
             <div>
               <div className="text-xs text-slate-400">Lượt kéo dây của:</div>
               <div className={`text-xl font-black ${currentTurn === 'red' ? 'text-rose-400' : 'text-blue-400'}`}>
-                {currentTurn === 'red' ? '🚩 ĐỘI ĐỎ' : '🔷 ĐỘI XANH'}
+                {currentTurn === 'red' ? `🚩 ${teamRed}` : `🔷 ${teamBlue}`}
               </div>
             </div>
             <div className="text-xs text-amber-300 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20 font-bold">
@@ -372,6 +390,14 @@ export default function KeoCo3DPage() {
         </div>
       </main>
 
+      {/* Cài Đặt Chung Modal */}
+      <GameSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onSaved={() => loadSettings()}
+      />
+
+      {/* Question Bank Modal */}
       <QuestionBankModal
         isOpen={isBankModalOpen}
         onClose={() => setIsBankModalOpen(false)}

@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Sparkles, Gamepad2, GraduationCap } from 'lucide-react';
+import { BookOpen, Settings } from 'lucide-react';
 import QuestionBankModal from './QuestionBankModal';
+import GameSettingsModal from './GameSettingsModal';
 
 export default function Navbar() {
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <>
@@ -58,13 +60,24 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Global Settings Button */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 border border-slate-700 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 transition flex items-center gap-1.5"
+              title="Cài đặt danh sách vịt đua, học sinh & thời gian cho tất cả các game"
+            >
+              <Settings className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">Cài Đặt Game</span>
+            </button>
+
+            {/* Question Bank Button */}
             <button
               onClick={() => setIsBankModalOpen(true)}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-teal-500/20 transition transform active:scale-95"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white flex items-center gap-1.5 shadow-lg shadow-teal-500/20 transition transform active:scale-95"
             >
               <BookOpen className="w-4 h-4" />
-              <span>Kho Đề Thi Lớp 1 - 5</span>
+              <span>Kho Đề Thi</span>
             </button>
           </div>
 
@@ -74,6 +87,11 @@ export default function Navbar() {
       <QuestionBankModal
         isOpen={isBankModalOpen}
         onClose={() => setIsBankModalOpen(false)}
+      />
+
+      <GameSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </>
   );
