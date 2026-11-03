@@ -6,11 +6,6 @@ import { sound } from '@/lib/audio';
 import { Storage } from '@/lib/storage';
 import { Question, QUESTION_BANKS } from '@/data/questionBanks';
 import QuestionBankModal from '@/components/QuestionBankModal';
-import GameSettingsModal from '@/components/GameSettingsModal';
-import { 
-  GameSettingsManager, 
-  Participant 
-} from '@/lib/gameSettings';
 import { 
   ArrowLeft, 
   BookOpen, 
@@ -20,8 +15,8 @@ import {
   RefreshCw,
   Play,
   Settings,
-  Timer,
-  Users
+  Eye,
+  RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,70 +29,60 @@ interface DuckCompetitor {
   mesh?: THREE.Group;
 }
 
+const DEFAULT_NAMES = ["Tổ 1", "Tổ 2", "Tổ 3", "Tổ 4", "An", "Bình", "Chi", "Duy"];
+const DUCK_PALETTE = [
+  0xfacc15, // Vàng
+  0x38bdf8, // Xanh da trời
+  0xf97316, // Cam
+  0xec4899, // Hồng
+  0x10b981, // Xanh lá
+  0xa855f7, // Tím
+  0xef4444, // Đỏ
+  0x14b8a6, // Ngọc bích
+];
+
 export default function DuaVit3DPage() {
   const mountRef = useRef<HTMLDivElement>(null);
   
-  // Game states from settings
-  const [activeDucks, setActiveDucks] = useState<Participant[]>([]);
-  const [raceDuration, setRaceDuration] = useState<number>(8); // default 8s
+  // Game states
+  const [names, setNames] = useState<string[]>(DEFAULT_NAMES);
   const [questions, setQuestions] = useState<Question[]>(QUESTION_BANKS[0].subjects[0].questions);
+  const [quizQueue, setQuizQueue] = useState<Question[]>([]);
   const [quizTitle, setQuizTitle] = useState<string>("Toán Lớp 1 - Cơ Bản");
-  
+
   // Race runtime states
-  const [isRacing, setIsRacing] = useState<boolean>(false);
-  const [timeLeft, setTimeLeft] = useState<number>(8);
-  const [winner, setWinner] = useState<DuckCompetitor | null>(null);
-  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
+  const [racing, setRacing] = useState<boolean>(false);
+  const [winnerDuck, setWinnerDuck] = useState<DuckCompetitor | null>(null);
+  const [showQuestionBox, setShowQuestionBox] = useState<boolean>(false);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [answeredState, setAnsweredState] = useState<{ selectedIndex: number; isCorrect: boolean } | null>(null);
 
   // Modals
   const [isBankModalOpen, setIsBankModalOpen] = useState<boolean>(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [customNamesText, setCustomNamesText] = useState<string>(DEFAULT_NAMES.join('\n'));
+  const [customQuizText, setCustomQuizText] = useState<string>('');
 
-  // Race Refs for Three.js
+  // Three.js Refs
   const ducksRef = useRef<DuckCompetitor[]>([]);
   const isRacingRef = useRef<boolean>(false);
-  const raceDurationRef = useRef<number>(8);
-  const raceStartTimeRef = useRef<number>(0);
-  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load global settings
-  const loadSettings = () => {
-    const s = GameSettingsManager.getSettings();
-    const active = s.participants.filter(p => p.enabled);
-    const chosen = active.length >= 2 ? active : s.participants.slice(0, 4);
-    setActiveDucks(chosen);
-    setRaceDuration(s.raceDurationSec);
-    raceDurationRef.current = s.raceDurationSec;
-    setTimeLeft(s.raceDurationSec);
-
-    // Map to 3D competitor format
-    ducksRef.current = chosen.map((p, i) => ({
-      id: p.id,
-      name: p.name,
-      color: parseInt((p.color || '#facc15').replace('#', '0x'), 16),
+  // Initialize competitors list
+  useEffect(() => {
+    ducksRef.current = names.map((name, i) => ({
+      id: `duck_${i}`,
+      name,
+      color: DUCK_PALETTE[i % DUCK_PALETTE.length],
       pos: 0,
       finished: false,
     }));
-  };
-
-  useEffect(() => {
-    loadSettings();
-
-    const handleSettingsUpdated = () => {
-      loadSettings();
-    };
-
-    window.addEventListener('smartstudy_settings_updated', handleSettingsUpdated);
-    return () => window.removeEventListener('smartstudy_settings_updated', handleSettingsUpdated);
-  }, []);
+  }, [names]);
 
   // Build Three.js 3D River Scene
   useEffect(() => {
     const currentMount = mountRef.current;
-    if (!currentMount || activeDucks.length === 0) return;
+    if (!currentMount || names.length === 0) return;
 
-    // Clean previous children if any
     while (currentMount.firstChild) {
       currentMount.removeChild(currentMount.firstChild);
     }
@@ -118,7 +103,6 @@ export default function DuaVit3DPage() {
     renderer.shadowMap.enabled = true;
     currentMount.appendChild(renderer.domElement);
 
-    // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambient);
 
@@ -127,7 +111,7 @@ export default function DuaVit3DPage() {
     sun.castShadow = true;
     scene.add(sun);
 
-    // 1. Water River
+    // River
     const riverLength = 28;
     const riverWidth = 18;
     const waterGeo = new THREE.PlaneGeometry(riverWidth, riverLength, 64, 64);
@@ -140,7 +124,7 @@ export default function DuaVit3DPage() {
     waterMesh.rotation.x = -Math.PI / 2;
     scene.add(waterMesh);
 
-    // 2. River Banks
+    // River Banks
     const bankGeo = new THREE.BoxGeometry(4, 1.2, riverLength);
     const bankMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.8 });
     const leftBank = new THREE.Mesh(bankGeo, bankMat);
@@ -151,7 +135,7 @@ export default function DuaVit3DPage() {
     rightBank.position.set(riverWidth / 2 + 2, 0.3, 0);
     scene.add(rightBank);
 
-    // 3. Lines
+    // Start & Finish Lines
     const startLine = new THREE.Mesh(
       new THREE.PlaneGeometry(riverWidth, 0.4),
       new THREE.MeshBasicMaterial({ color: 0xffffff })
@@ -188,7 +172,7 @@ export default function DuaVit3DPage() {
     archGroup.add(poleR);
     scene.add(archGroup);
 
-    // 4. Duck Meshes
+    // Duck Meshes
     const duckCount = ducksRef.current.length;
     const laneSpacing = (riverWidth - 4) / Math.max(1, duckCount - 1);
     const startX = -(riverWidth - 4) / 2;
@@ -221,7 +205,6 @@ export default function DuaVit3DPage() {
       duck.mesh = duckGroup;
     });
 
-    // Animation Loop
     let animId: number;
     const clock = new THREE.Clock();
 
@@ -238,20 +221,16 @@ export default function DuaVit3DPage() {
       }
       pos.needsUpdate = true;
 
-      // Race Physics: calibrated to finish precisely within raceDurationSec!
+      // Authentic Race Simulation (All ducks swim with random speed increments!)
       if (isRacingRef.current) {
         let firstFinished: DuckCompetitor | null = null;
-        const targetDuration = raceDurationRef.current || 8;
-        // 60 fps * targetDuration = total frames
-        // Base rate per frame to reach 100 in targetDuration seconds
-        const baseRate = 100 / (60 * targetDuration);
 
         ducksRef.current.forEach(duck => {
           if (duck.finished) return;
 
-          // Randomized burst fluctuations around baseRate
-          const variance = 0.6 + Math.random() * 0.8;
-          duck.pos = Math.min(100, duck.pos + baseRate * variance);
+          // Same speed formula as original: 0.6 + Math.random() * 2.1 (scaled per frame)
+          const speedIncrement = 0.35 + Math.random() * 0.95;
+          duck.pos = Math.min(100, duck.pos + speedIncrement);
 
           if (duck.pos >= 100) {
             duck.pos = 100;
@@ -264,19 +243,10 @@ export default function DuaVit3DPage() {
 
         if (firstFinished) {
           isRacingRef.current = false;
-          setIsRacing(false);
-          if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-          setTimeLeft(0);
-          
-          const winnerDuck = firstFinished;
-          setWinner(winnerDuck);
+          setRacing(false);
+          const winner = firstFinished;
+          setWinnerDuck(winner);
           sound.playFanfare();
-
-          if (questions.length > 0) {
-            const randQ = questions[Math.floor(Math.random() * questions.length)];
-            setActiveQuestion(Storage.shuffleOptions(randQ));
-            setAnsweredState(null);
-          }
         }
       }
 
@@ -313,46 +283,34 @@ export default function DuaVit3DPage() {
       }
       renderer.dispose();
     };
-  }, [activeDucks, questions]);
+  }, [names]);
 
-  // Start Duck Race with Live Countdown Timer
-  const startDuckRace = () => {
-    if (isRacing) return;
-    setIsRacing(true);
+  // Start Race
+  const startRace = () => {
+    if (racing || names.length < 2) return;
+    setRacing(true);
     isRacingRef.current = true;
-    setWinner(null);
-    setActiveQuestion(null);
+    setWinnerDuck(null);
+    setShowQuestionBox(false);
+    setCurrentQuestion(null);
     setAnsweredState(null);
 
-    // Reset ducks
+    // Reset ducks to start
     ducksRef.current.forEach(duck => {
       duck.pos = 0;
       duck.finished = false;
     });
 
-    // Start Countdown
-    setTimeLeft(raceDuration);
-    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-    countdownTimerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
     sound.playTick();
   };
 
+  // Reset Race / New Round
   const resetRace = () => {
     isRacingRef.current = false;
-    setIsRacing(false);
-    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-    setTimeLeft(raceDuration);
-    setWinner(null);
-    setActiveQuestion(null);
+    setRacing(false);
+    setWinnerDuck(null);
+    setShowQuestionBox(false);
+    setCurrentQuestion(null);
     setAnsweredState(null);
     ducksRef.current.forEach(duck => {
       duck.pos = 0;
@@ -361,12 +319,50 @@ export default function DuaVit3DPage() {
     sound.playTick();
   };
 
+  // Show Question for winner (Exact StudyAI flow!)
+  const handleShowQuestion = () => {
+    if (!winnerDuck || questions.length === 0) return;
+    const randQ = questions[Math.floor(Math.random() * questions.length)];
+    setCurrentQuestion(Storage.shuffleOptions(randQ));
+    setShowQuestionBox(true);
+    setAnsweredState(null);
+    sound.playTick();
+  };
+
+  // Answer
   const handleAnswer = (optionIndex: number) => {
-    if (!activeQuestion || answeredState !== null) return;
-    const isCorrect = optionIndex === activeQuestion.correct;
+    if (!currentQuestion || answeredState !== null) return;
+    const isCorrect = optionIndex === currentQuestion.correct;
     setAnsweredState({ selectedIndex: optionIndex, isCorrect });
     if (isCorrect) sound.playCorrect();
     else sound.playWrong();
+  };
+
+  // Settings
+  const handleOpenSettings = () => {
+    setCustomNamesText(names.join('\n'));
+    setCustomQuizText(Storage.toStudyAiText(questions));
+    setIsSettingsOpen(true);
+  };
+
+  const handleSaveSettings = () => {
+    const parsedNames = customNamesText.split('\n').map(s => s.trim()).filter(Boolean);
+    const parsedQuestions = Storage.parseStudyAiText(customQuizText);
+
+    if (parsedNames.length < 2) {
+      alert("Cần ít nhất 2 tên trong danh sách vịt đua!");
+      return;
+    }
+    if (parsedQuestions.length < 1) {
+      alert("Cần ít nhất 1 câu hỏi hợp lệ!");
+      return;
+    }
+
+    setNames(parsedNames.slice(0, 10));
+    setQuestions(parsedQuestions);
+    setQuizTitle("Đề Soạn Tùy Chỉnh");
+    setIsSettingsOpen(false);
+    resetRace();
   };
 
   return (
@@ -380,36 +376,34 @@ export default function DuaVit3DPage() {
           </Link>
           <div className="h-4 w-px bg-slate-800" />
           <h1 className="text-lg font-bold flex items-center gap-2">
-            <span>🦆 Đua Vịt Tri Thức 3D</span>
-            <span className="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30 font-bold">
-              ⏱️ {raceDuration}s Đua Cả Đàn
+            <span>🦆 Đua Vịt</span>
+            <span className="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+              {names.length} Vịt Đua
             </span>
           </h1>
         </div>
 
         <div className="flex items-center gap-2.5">
-          {/* Cài Đặt Chung */}
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5 shadow-md shadow-amber-500/10"
-          >
-            <Settings className="w-4 h-4" />
-            Cài Đặt Vịt & Thời Gian ({activeDucks.length} vịt)
-          </button>
-
-          {/* Đổi Bộ Đề */}
           <button
             onClick={() => setIsBankModalOpen(true)}
             className="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-600/50 transition flex items-center gap-1.5"
           >
             <BookOpen className="w-4 h-4" />
-            Bộ Đề (Lớp 1-5)
+            Đổi Bộ Đề (Lớp 1-5)
+          </button>
+
+          <button
+            onClick={handleOpenSettings}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5"
+          >
+            <Settings className="w-4 h-4" />
+            Soạn Tên & Câu Hỏi
           </button>
 
           <button
             onClick={resetRace}
             className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:text-white text-slate-400 transition"
-            title="Làm mới cuộc đua"
+            title="Bắt đầu lại"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -419,72 +413,62 @@ export default function DuaVit3DPage() {
       {/* Main Grid */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 max-w-7xl mx-auto w-full">
         
-        {/* Left Column: 3D River Race */}
+        {/* Left: 3D River Race */}
         <div className="lg:col-span-7 rounded-3xl glass-panel border border-slate-800 p-4 relative flex flex-col items-center justify-center shadow-2xl">
           
           {/* Winner Banner */}
-          {winner && (
-            <div className="absolute top-4 z-20 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-base sm:text-lg shadow-2xl flex items-center gap-2.5 animate-bounce">
+          {winnerDuck && (
+            <div className="absolute top-4 z-20 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-base shadow-2xl flex items-center gap-2 animate-bounce">
               <Trophy className="w-6 h-6" />
-              VỊT CỦA "{winner.name.toUpperCase()}" VỀ ĐÍCH ĐẦU TIÊN!
+              🏆 Vịt của "{winnerDuck.name}" về đích đầu tiên!
             </div>
           )}
 
-          {/* Live Countdown Badge during race */}
-          {isRacing && (
-            <div className="absolute top-4 left-6 z-20 px-4 py-2 rounded-xl bg-rose-500/90 text-white font-black text-sm flex items-center gap-2 animate-pulse shadow-lg">
-              <Timer className="w-4 h-4" />
-              Thời gian đua: 0{timeLeft}s
-            </div>
-          )}
-
-          {/* Three.js 3D Canvas */}
           <div ref={mountRef} className="w-full aspect-[4/3] max-h-[480px]" />
 
-          {/* Race Controls */}
+          {/* Action button */}
           <div className="mt-4 z-10 flex items-center gap-4">
             <button
-              onClick={startDuckRace}
-              disabled={isRacing}
+              onClick={startRace}
+              disabled={racing}
               className={`px-8 py-3.5 rounded-2xl font-black text-base flex items-center gap-2.5 shadow-xl transition-all ${
-                isRacing
+                racing
                   ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-amber-500/25 hover:scale-105 active:scale-95'
               }`}
             >
-              <Play className={`w-5 h-5 ${isRacing ? 'animate-spin' : ''}`} />
-              {isRacing ? `Đang bơi đua (0${timeLeft}s)...` : `🌊 BƠI NGAY (${raceDuration}s)!`}
+              <Play className={`w-5 h-5 ${racing ? 'animate-spin' : ''}`} />
+              {racing ? 'Đang bơi đua...' : '🌊 BƠI!'}
             </button>
           </div>
 
-          <div className="flex items-center justify-between w-full text-xs text-slate-400 mt-2 px-4">
-            <span>Đang tham gia: <strong>{activeDucks.length} vịt</strong></span>
-            <span>Thời gian đua: <strong>{raceDuration} giây</strong></span>
-          </div>
+          <p className="text-xs text-slate-400 mt-2 text-center">
+            💡 Bấm <strong>"Bơi!"</strong> để cả đàn vịt cùng bơi về đích với tốc độ ngẫu nhiên. Chú vịt về nhất sẽ đại diện học sinh/tổ đó trả lời câu hỏi thử thách!
+          </p>
 
           {/* Duck Lane Badges */}
           <div className="w-full flex items-center justify-center gap-2 mt-3 pt-3 border-t border-slate-800 text-[11px] font-bold text-slate-400 overflow-x-auto">
-            {activeDucks.map((duck) => (
-              <div key={duck.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800">
+            {names.map((name, i) => (
+              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800">
                 <span 
                   className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: duck.color || '#facc15' }}
+                  style={{ backgroundColor: `#${DUCK_PALETTE[i % DUCK_PALETTE.length].toString(16).padStart(6, '0')}` }}
                 />
-                <span className="truncate max-w-[75px]">{duck.name}</span>
+                <span className="truncate max-w-[75px]">{name}</span>
               </div>
             ))}
           </div>
 
         </div>
 
-        {/* Right Column: Question Area */}
+        {/* Right: Question Area (Adhering 100% to Original StudyAI Step Flow!) */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           
           <div className="p-4 rounded-2xl glass-card flex items-center justify-between border border-slate-800">
             <div>
               <div className="text-xs text-slate-400">Trạng thái:</div>
               <div className="text-base font-bold text-amber-400">
-                {isRacing ? `🌊 Đang bơi đua (còn ${timeLeft}s)...` : winner ? `🏆 Về nhất: ${winner.name}` : 'Bấm Bơi để chọn người trả lời!'}
+                {racing ? '🌊 Đang diễn ra cuộc đua...' : winnerDuck ? `🏆 Về nhất: ${winnerDuck.name}` : 'Bấm Bơi để chọn người trả lời!'}
               </div>
             </div>
             <div className="text-xs text-teal-300 bg-teal-500/10 px-3 py-1.5 rounded-xl border border-teal-500/20 font-bold">
@@ -494,24 +478,46 @@ export default function DuaVit3DPage() {
 
           {/* Question Box */}
           <div className="flex-1 p-6 rounded-3xl glass-panel border border-slate-800 flex flex-col justify-center">
-            {winner && activeQuestion ? (
+            
+            {/* Step 1: Winner Announcement & Show Question Button (Exact StudyAI logic) */}
+            {winnerDuck && !showQuestionBox && (
+              <div className="text-center py-8 space-y-4 animate-in zoom-in-95 duration-200">
+                <div className="text-5xl animate-bounce">🙋</div>
+                <h3 className="text-xl font-black text-white">
+                  {winnerDuck.name} hãy trả lời câu hỏi thử thách!
+                </h3>
+                <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                  Chú vịt của {winnerDuck.name} đã bơi về đích đầu tiên. Bấm nút bên dưới để mở câu hỏi trắc nghiệm.
+                </p>
+                <button
+                  onClick={handleShowQuestion}
+                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white font-black text-sm shadow-xl transition transform hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto"
+                >
+                  <Eye className="w-5 h-5" />
+                  👀 Hiện Câu Hỏi
+                </button>
+              </div>
+            )}
+
+            {/* Step 2: The Question Box when revealed */}
+            {winnerDuck && showQuestionBox && currentQuestion && (
               <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Trophy className="w-4 h-4" /> CÂU HỎI THỬ THÁCH DÀNH CHO: {winner.name}
+                    <Trophy className="w-4 h-4" /> CÂU HỎI THỬ THÁCH DÀNH CHO: {winnerDuck.name}
                   </span>
                 </div>
 
                 <h3 className="text-base font-bold text-white leading-relaxed">
-                  {activeQuestion.question}
+                  {currentQuestion.question}
                 </h3>
 
                 <div className="grid grid-cols-1 gap-2.5 pt-1">
-                  {activeQuestion.options.map((opt, idx) => {
+                  {currentQuestion.options.map((opt, idx) => {
                     let btnStyle = "bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-slate-200";
 
                     if (answeredState !== null) {
-                      if (idx === activeQuestion.correct) {
+                      if (idx === currentQuestion.correct) {
                         btnStyle = "bg-emerald-600/30 border-emerald-500 text-emerald-200 font-bold";
                       } else if (idx === answeredState.selectedIndex) {
                         btnStyle = "bg-rose-600/30 border-rose-500 text-rose-200";
@@ -534,7 +540,7 @@ export default function DuaVit3DPage() {
                           {opt}
                         </span>
 
-                        {answeredState !== null && idx === activeQuestion.correct && (
+                        {answeredState !== null && idx === currentQuestion.correct && (
                           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         )}
                         {answeredState !== null && idx === answeredState.selectedIndex && !answeredState.isCorrect && (
@@ -546,46 +552,93 @@ export default function DuaVit3DPage() {
                 </div>
 
                 {answeredState !== null && (
-                  <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
-                    answeredState.isCorrect 
-                      ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
-                  }`}>
-                    <span className="font-bold">
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className={`text-xs font-bold ${answeredState.isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {answeredState.isCorrect 
-                        ? `🎉 Xuất sắc! ${winner.name} đã ghi điểm!` 
-                        : `😢 Tiếc quá! Hãy cùng xem lại câu hỏi nhé.`}
+                        ? `🎉 Chính xác! ${winnerDuck.name} ghi điểm cho lớp.` 
+                        : `😢 Chưa đúng rồi, cùng xem đáp án đúng nhé.`}
                     </span>
                     <button
-                      onClick={startDuckRace}
-                      className="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 font-bold transition text-xs"
+                      onClick={resetRace}
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5"
                     >
-                      Bơi Ván Mới 🌊
+                      <RotateCcw className="w-4 h-4" />
+                      🌊 Bơi Ván Mới
                     </button>
                   </div>
                 )}
               </div>
-            ) : (
+            )}
+
+            {/* Empty State before any race */}
+            {!winnerDuck && (
               <div className="text-center py-12 text-slate-500 space-y-3">
                 <div className="text-4xl animate-bounce">🦆</div>
-                <div className="font-semibold text-slate-400">Chưa có người về nhất</div>
+                <div className="font-semibold text-slate-400">Chưa bắt đầu cuộc đua</div>
                 <p className="text-xs max-w-xs mx-auto">
-                  Hãy bấm nút <strong>"🌊 BƠI NGAY!"</strong> bên dòng sông. Chú vịt nào bơi về đích đầu tiên sẽ mở ra câu hỏi bài học!
+                  Hãy bấm nút <strong>"🌊 BƠI!"</strong> bên dòng sông. Chú vịt nào bơi về đích đầu tiên sẽ đại diện học sinh đó trả lời câu hỏi!
                 </p>
               </div>
             )}
+
           </div>
 
         </div>
 
       </main>
 
-      {/* Cài Đặt Chung Modal */}
-      <GameSettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        onSaved={() => loadSettings()}
-      />
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-2xl rounded-2xl glass-panel p-6 border border-slate-700 shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Settings className="w-5 h-5 text-amber-400" />
+              Soạn Tên Vịt Đua & Bộ Câu Hỏi
+            </h3>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-300">
+                  Danh sách vịt đua (mỗi dòng 1 tên học sinh/tổ):
+                </label>
+                <textarea
+                  value={customNamesText}
+                  onChange={(e) => setCustomNamesText(e.target.value)}
+                  rows={4}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500 mt-1 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300">
+                  Bộ câu hỏi trắc nghiệm (Cú pháp: Câu hỏi | Đáp án đúng | Sai 1 | Sai 2):
+                </label>
+                <textarea
+                  value={customQuizText}
+                  onChange={(e) => setCustomQuizText(e.target.value)}
+                  rows={6}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500 mt-1 font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                className="px-5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition font-bold"
+              >
+                Lưu Lại
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Question Bank Modal */}
       <QuestionBankModal
@@ -594,8 +647,7 @@ export default function DuaVit3DPage() {
         onSelectQuestions={(selectedQs, title) => {
           setQuestions(selectedQs);
           setQuizTitle(title);
-          setActiveQuestion(null);
-          setAnsweredState(null);
+          resetRace();
         }}
       />
 

@@ -6,72 +6,63 @@ import { sound } from '@/lib/audio';
 import { Storage } from '@/lib/storage';
 import { Question, QUESTION_BANKS } from '@/data/questionBanks';
 import QuestionBankModal from '@/components/QuestionBankModal';
-import GameSettingsModal from '@/components/GameSettingsModal';
-import { GameSettingsManager } from '@/lib/gameSettings';
 import { 
   RotateCw, 
-  Sparkles, 
   BookOpen, 
   Award, 
   ArrowLeft, 
   CheckCircle2, 
   XCircle,
   Settings,
-  Users
+  RefreshCw,
+  Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 
+const DEFAULT_NAMES = ["Tổ 1", "Tổ 2", "Tổ 3", "Tổ 4", "An", "Bình", "Chi", "Duy"];
 const SLICE_COLORS = [
-  0x0ea5a4, 0x3b82f6, 0xf59e0b, 0xec4899, 
-  0x8b5cf6, 0x10b981, 0xef4444, 0x06b6d4, 
-  0xf97316, 0x84cc16, 0x6366f1, 0xf43f5e
+  0x0ea5a4, 0x2563eb, 0xf97316, 0xdb2777, 
+  0x7c3aed, 0xeab308, 0x059669, 0x0284c7, 
+  0xef4444, 0x14b8a6
 ];
 
 export default function VongQuay3DPage() {
   const mountRef = useRef<HTMLDivElement>(null);
   const wheelMeshRef = useRef<THREE.Group | null>(null);
 
-  // Game States
-  const [names, setNames] = useState<string[]>([]);
-  const [spinDuration, setSpinDuration] = useState<number>(5);
+  // States
+  const [names, setNames] = useState<string[]>(DEFAULT_NAMES);
   const [questions, setQuestions] = useState<Question[]>(QUESTION_BANKS[0].subjects[0].questions);
+  const [quizQueue, setQuizQueue] = useState<Question[]>([]);
+  const [quizIndex, setQuizIndex] = useState<number>(0);
+  const [classScore, setClassScore] = useState<number>(0);
   const [quizTitle, setQuizTitle] = useState<string>("Toán Lớp 1 - Cơ Bản");
-  
+
+  // Interaction States
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [selectedWinner, setSelectedWinner] = useState<string | null>(null);
-  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
-  const [currentScore, setCurrentScore] = useState<number>(0);
+  const [pickedWinner, setPickedWinner] = useState<string | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [answeredState, setAnsweredState] = useState<{ selectedIndex: number; isCorrect: boolean } | null>(null);
 
   // Modals
   const [isBankModalOpen, setIsBankModalOpen] = useState<boolean>(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [customNamesText, setCustomNamesText] = useState<string>(DEFAULT_NAMES.join('\n'));
+  const [customQuizText, setCustomQuizText] = useState<string>('');
 
-  // Refs for animation
+  // Refs for 3D spin physics
   const spinSpeedRef = useRef<number>(0);
   const currentRotationRef = useRef<number>(0);
   const isSpinningRef = useRef<boolean>(false);
   const lastTickSliceRef = useRef<number>(-1);
-  const frictionRef = useRef<number>(0.988);
 
-  const loadSettings = () => {
-    const s = GameSettingsManager.getSettings();
-    const active = s.participants.filter(p => p.enabled);
-    const chosenNames = active.length >= 2 ? active.map(p => p.name) : s.participants.slice(0, 4).map(p => p.name);
-    setNames(chosenNames);
-    setSpinDuration(s.spinDurationSec);
-    // friction: 3s -> 0.978, 5s -> 0.988, 8s -> 0.993
-    frictionRef.current = s.spinDurationSec <= 3 ? 0.978 : s.spinDurationSec >= 8 ? 0.993 : 0.988;
-  };
-
+  // Initialize Quiz Queue
   useEffect(() => {
-    loadSettings();
-    const handleSettingsUpdated = () => loadSettings();
-    window.addEventListener('smartstudy_settings_updated', handleSettingsUpdated);
-    return () => window.removeEventListener('smartstudy_settings_updated', handleSettingsUpdated);
-  }, []);
+    setQuizQueue(Storage.shuffle(questions));
+    setQuizIndex(0);
+  }, [questions]);
 
-  // Build Three.js 3D Wheel Scene
+  // Build Three.js 3D Wheel
   useEffect(() => {
     const currentMount = mountRef.current;
     if (!currentMount || names.length === 0) return;
@@ -91,10 +82,8 @@ export default function VongQuay3DPage() {
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
     currentMount.appendChild(renderer.domElement);
 
-    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
@@ -102,21 +91,16 @@ export default function VongQuay3DPage() {
     dirLight.position.set(5, 8, 8);
     scene.add(dirLight);
 
-    const blueLight = new THREE.PointLight(0x38bdf8, 3, 20);
-    blueLight.position.set(-6, -4, 4);
-    scene.add(blueLight);
-
-    // Wheel Main Group
     const wheelGroup = new THREE.Group();
     wheelMeshRef.current = wheelGroup;
     scene.add(wheelGroup);
 
-    // Build 3D Slices with Canvas Texture
     const radius = 3.2;
     const depth = 0.5;
     const sliceCount = names.length;
     const sliceAngle = (Math.PI * 2) / sliceCount;
 
+    // Draw Texture with Labels
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 1024;
@@ -142,7 +126,6 @@ export default function VongQuay3DPage() {
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Text label
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(startAngle + sliceAngle / 2);
@@ -151,7 +134,8 @@ export default function VongQuay3DPage() {
       ctx.font = 'bold 36px sans-serif';
       ctx.shadowColor = 'rgba(0,0,0,0.5)';
       ctx.shadowBlur = 8;
-      ctx.fillText(names[i], canvasRadius - 30, 12);
+      const label = names[i].length > 12 ? names[i].slice(0, 11) + '…' : names[i];
+      ctx.fillText(label, canvasRadius - 30, 12);
       ctx.restore();
     }
 
@@ -168,11 +152,13 @@ export default function VongQuay3DPage() {
     wheelCylinder.rotation.x = Math.PI / 2;
     wheelGroup.add(wheelCylinder);
 
+    // Rim
     const rimGeo = new THREE.TorusGeometry(radius + 0.05, 0.12, 16, 64);
     const rimMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.2 });
     const rimMesh = new THREE.Mesh(rimGeo, rimMat);
     wheelGroup.add(rimMesh);
 
+    // Center Hub
     const hubGeo = new THREE.CylinderGeometry(0.65, 0.7, 0.6, 32);
     const hubMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.1 });
     const hubMesh = new THREE.Mesh(hubGeo, hubMat);
@@ -180,6 +166,7 @@ export default function VongQuay3DPage() {
     hubMesh.position.z = 0.05;
     wheelGroup.add(hubMesh);
 
+    // Pointer Needle
     const needleGroup = new THREE.Group();
     needleGroup.position.set(0, radius + 0.35, 0.4);
 
@@ -198,8 +185,8 @@ export default function VongQuay3DPage() {
         currentRotationRef.current += spinSpeedRef.current;
         wheelMeshRef.current.rotation.z = currentRotationRef.current;
 
-        // Friction based on configured duration
-        spinSpeedRef.current *= frictionRef.current;
+        // Friction deceleration
+        spinSpeedRef.current *= 0.988;
 
         const normAngle = ((currentRotationRef.current % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
         const currentSlice = Math.floor((normAngle / (Math.PI * 2)) * sliceCount);
@@ -210,24 +197,23 @@ export default function VongQuay3DPage() {
 
         needleGroup.rotation.z = Math.sin(Date.now() * 0.05) * (spinSpeedRef.current * 0.5);
 
+        // Stopped
         if (spinSpeedRef.current < 0.002) {
           isSpinningRef.current = false;
           setSpinning(false);
           spinSpeedRef.current = 0;
 
+          // Determine Winner
           const finalAngle = ((currentRotationRef.current % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
           const topAngle = (Math.PI / 2 - finalAngle + Math.PI * 2) % (Math.PI * 2);
           const winnerIndex = Math.floor((topAngle / (Math.PI * 2)) * sliceCount) % sliceCount;
 
           const winnerName = names[winnerIndex] || names[0];
-          setSelectedWinner(winnerName);
+          setPickedWinner(winnerName);
           sound.playFanfare();
 
-          if (questions.length > 0) {
-            const randomQ = questions[Math.floor(Math.random() * questions.length)];
-            setActiveQuestion(Storage.shuffleOptions(randomQ));
-            setAnsweredState(null);
-          }
+          // Immediately present next question
+          triggerNextQuestion();
         }
       }
 
@@ -242,7 +228,6 @@ export default function VongQuay3DPage() {
       camera.updateProjectionMatrix();
       renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -253,63 +238,119 @@ export default function VongQuay3DPage() {
       }
       renderer.dispose();
     };
-  }, [names, questions]);
+  }, [names]);
 
+  // Trigger Next Question according to Original queue
+  const triggerNextQuestion = () => {
+    let currentQueue = quizQueue;
+    let nextIdx = quizIndex;
+
+    if (nextIdx >= currentQueue.length || currentQueue.length === 0) {
+      currentQueue = Storage.shuffle(questions);
+      setQuizQueue(currentQueue);
+      nextIdx = 0;
+    }
+
+    const raw = currentQueue[nextIdx];
+    const preparedQ = Storage.shuffleOptions(raw);
+    setCurrentQuestion(preparedQ);
+    setQuizIndex(nextIdx + 1);
+    setAnsweredState(null);
+  };
+
+  // Spin
   const spinWheel = () => {
     if (spinning) return;
     setSpinning(true);
     isSpinningRef.current = true;
-    setSelectedWinner(null);
-    setActiveQuestion(null);
+    setPickedWinner(null);
+    setCurrentQuestion(null);
     setAnsweredState(null);
 
+    // Initial angular velocity impulse
     spinSpeedRef.current = 0.38 + Math.random() * 0.22;
     sound.playTick();
   };
 
+  // Answer
   const handleAnswer = (optionIndex: number) => {
-    if (!activeQuestion || answeredState !== null) return;
-    const isCorrect = optionIndex === activeQuestion.correct;
+    if (!currentQuestion || answeredState !== null) return;
+    const isCorrect = optionIndex === currentQuestion.correct;
     setAnsweredState({ selectedIndex: optionIndex, isCorrect });
 
     if (isCorrect) {
       sound.playCorrect();
-      setCurrentScore(prev => prev + 10);
+      setClassScore(prev => prev + 1);
     } else {
       sound.playWrong();
     }
   };
 
+  // Reset for next spin
+  const handleNextTurn = () => {
+    setCurrentQuestion(null);
+    setPickedWinner(null);
+    setAnsweredState(null);
+  };
+
+  // Restart Game
+  const restartGame = () => {
+    setClassScore(0);
+    setQuizIndex(0);
+    setQuizQueue(Storage.shuffle(questions));
+    setCurrentQuestion(null);
+    setPickedWinner(null);
+    setAnsweredState(null);
+    sound.playTick();
+  };
+
+  // Open settings
+  const handleOpenSettings = () => {
+    setCustomNamesText(names.join('\n'));
+    setCustomQuizText(Storage.toStudyAiText(questions));
+    setIsSettingsOpen(true);
+  };
+
+  // Save settings
+  const handleSaveSettings = () => {
+    const parsedNames = customNamesText.split('\n').map(s => s.trim()).filter(Boolean);
+    const parsedQuestions = Storage.parseStudyAiText(customQuizText);
+
+    if (parsedNames.length < 2) {
+      alert("Cần ít nhất 2 tên trong danh sách quay!");
+      return;
+    }
+    if (parsedQuestions.length < 1) {
+      alert("Cần ít nhất 1 câu hỏi hợp lệ!");
+      return;
+    }
+
+    setNames(parsedNames);
+    setQuestions(parsedQuestions);
+    setQuizTitle("Đề Soạn Tùy Chỉnh");
+    setIsSettingsOpen(false);
+    restartGame();
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white relative">
       
       {/* Top Navbar */}
-      <header className="p-4 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md flex items-center justify-between z-20">
+      <header className="p-4 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
-          <Link 
-            href="/"
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5 text-sm"
-          >
-            <ArrowLeft className="w-4 h-4" /> Quay lại
+          <Link href="/" className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-sm flex items-center gap-1.5">
+            <ArrowLeft className="w-4 h-4" /> Trang chủ
           </Link>
           <div className="h-4 w-px bg-slate-800" />
           <h1 className="text-lg font-bold flex items-center gap-2">
-            <span className="text-teal-400">🎡 Vòng Quay May Mắn 3D</span>
+            <span>🎡 Vòng Quay May Mắn</span>
             <span className="text-xs bg-teal-500/20 text-teal-300 px-2.5 py-0.5 rounded-full border border-teal-500/30">
-              Quay {spinDuration}s
+              {names.length} Người Chơi
             </span>
           </h1>
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-1.5"
-          >
-            <Settings className="w-4 h-4" />
-            Cài Đặt Người Chơi ({names.length})
-          </button>
-
           <button
             onClick={() => setIsBankModalOpen(true)}
             className="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-600/50 transition flex items-center gap-1.5"
@@ -317,83 +358,101 @@ export default function VongQuay3DPage() {
             <BookOpen className="w-4 h-4" />
             Đổi Bộ Đề (Lớp 1-5)
           </button>
+
+          <button
+            onClick={handleOpenSettings}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5"
+          >
+            <Settings className="w-4 h-4" />
+            Soạn Tên & Câu Hỏi
+          </button>
+
+          <button
+            onClick={restartGame}
+            className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:text-white text-slate-400 transition"
+            title="Chơi lại từ đầu"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
-      {/* Main Game Stage */}
+      {/* Main Grid */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 max-w-7xl mx-auto w-full">
         
-        {/* Left Column: 3D Wheel Stage */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center relative rounded-3xl glass-panel p-4 overflow-hidden border border-slate-800 shadow-2xl">
+        {/* Left: 3D Wheel */}
+        <div className="lg:col-span-7 rounded-3xl glass-panel border border-slate-800 p-4 relative flex flex-col items-center justify-center shadow-2xl">
           
-          {selectedWinner && (
-            <div className="absolute top-6 z-10 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-500 text-white font-extrabold text-lg shadow-xl animate-bounce flex items-center gap-2">
-              <Award className="w-5 h-5" />
-              Đến lượt: {selectedWinner}!
+          {pickedWinner && (
+            <div className="absolute top-4 z-20 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-rose-500 text-white font-extrabold text-base shadow-2xl flex items-center gap-2 animate-bounce">
+              <Award className="w-5 h-5 text-yellow-300" />
+              🎉 Xin mời "{pickedWinner}" trả lời câu hỏi!
             </div>
           )}
 
-          <div 
-            ref={mountRef} 
-            className="w-full aspect-square max-w-[520px] max-h-[520px] cursor-grab active:cursor-grabbing"
-          />
+          <div ref={mountRef} className="w-full aspect-square max-w-[500px] max-h-[500px]" />
 
           <div className="mt-4 z-10 flex items-center gap-4">
             <button
               onClick={spinWheel}
               disabled={spinning}
-              className={`px-8 py-3.5 rounded-2xl font-extrabold text-base flex items-center gap-2.5 transition-all shadow-xl ${
+              className={`px-8 py-3.5 rounded-2xl font-black text-base flex items-center gap-2.5 shadow-xl transition-all ${
                 spinning
                   ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white shadow-teal-500/25 hover:scale-105 active:scale-95'
               }`}
             >
               <RotateCw className={`w-5 h-5 ${spinning ? 'animate-spin' : ''}`} />
-              {spinning ? 'Đang quay...' : 'QUAY NGAY 🎲'}
+              {spinning ? 'Đang quay...' : 'QUAY! 🎲'}
             </button>
           </div>
 
-          <div className="text-xs text-slate-500 mt-2">
-            Đang gồm {names.length} ô quay: {names.join(', ')}
-          </div>
+          <p className="text-xs text-slate-400 mt-2 text-center">
+            Bấm <strong>QUAY</strong> để chọn ngẫu nhiên học sinh, sau đó câu hỏi sẽ hiện ra bên cạnh.
+          </p>
         </div>
 
-        {/* Right Column: Question Card & Scoreboard */}
+        {/* Right: Question Area */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           
+          {/* Stats Bar */}
           <div className="p-4 rounded-2xl glass-card flex items-center justify-between border border-slate-800">
             <div>
               <div className="text-xs text-slate-400">Điểm số lớp học</div>
-              <div className="text-2xl font-black text-teal-400">{currentScore} Điểm</div>
+              <div className="text-2xl font-black text-teal-400 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-amber-400" />
+                <span>{classScore} điểm</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              +10 điểm / câu đúng
+            <div className="text-right">
+              <div className="text-xs text-slate-400">Tiến độ câu hỏi</div>
+              <div className="text-sm font-bold text-indigo-300">
+                {quizIndex}/{questions.length} câu
+              </div>
             </div>
           </div>
 
+          {/* Question Box */}
           <div className="flex-1 p-6 rounded-3xl glass-panel border border-slate-800 flex flex-col justify-center">
-            {activeQuestion ? (
+            {currentQuestion ? (
               <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-teal-400 uppercase tracking-wider">
-                    ❓ Câu Hỏi Dành Cho {selectedWinner || 'Học Sinh'}
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-xs">
+                  <span className="font-bold text-teal-400 uppercase tracking-wider">
+                    ❓ Câu hỏi {quizIndex}/{questions.length} dành cho {pickedWinner}
                   </span>
-                  <span className="text-xs text-slate-400">
-                    {quizTitle}
-                  </span>
+                  <span className="text-slate-400">{quizTitle}</span>
                 </div>
 
-                <h3 className="text-lg font-bold text-white leading-relaxed">
-                  {activeQuestion.question}
+                <h3 className="text-base font-bold text-white leading-relaxed">
+                  {currentQuestion.question}
                 </h3>
 
-                <div className="grid grid-cols-1 gap-2.5 pt-2">
-                  {activeQuestion.options.map((opt, idx) => {
+                <div className="grid grid-cols-1 gap-2.5 pt-1">
+                  {currentQuestion.options.map((opt, idx) => {
                     let btnStyle = "bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-slate-200";
 
                     if (answeredState !== null) {
-                      if (idx === activeQuestion.correct) {
+                      if (idx === currentQuestion.correct) {
                         btnStyle = "bg-emerald-600/30 border-emerald-500 text-emerald-200 font-bold";
                       } else if (idx === answeredState.selectedIndex) {
                         btnStyle = "bg-rose-600/30 border-rose-500 text-rose-200";
@@ -416,7 +475,7 @@ export default function VongQuay3DPage() {
                           {opt}
                         </span>
 
-                        {answeredState !== null && idx === activeQuestion.correct && (
+                        {answeredState !== null && idx === currentQuestion.correct && (
                           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         )}
                         {answeredState !== null && idx === answeredState.selectedIndex && !answeredState.isCorrect && (
@@ -428,43 +487,86 @@ export default function VongQuay3DPage() {
                 </div>
 
                 {answeredState !== null && (
-                  <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
-                    answeredState.isCorrect 
-                      ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
-                  }`}>
-                    <span>
-                      {answeredState.isCorrect ? '🎉 Hoan hô! Câu trả lời chính xác!' : '❌ Chưa chính xác, hãy cố gắng ở lượt sau!'}
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className={`text-xs font-bold ${answeredState.isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {answeredState.isCorrect ? '🎉 Chính xác! Cộng 1 điểm cho lớp.' : '😢 Chưa đúng rồi, cùng xem đáp án đúng nhé.'}
                     </span>
                     <button
-                      onClick={spinWheel}
-                      className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 font-bold transition text-xs"
+                      onClick={handleNextTurn}
+                      className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5"
                     >
-                      Lượt tiếp theo →
+                      🎡 Quay Tiếp →
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <div className="text-center py-12 text-slate-500 space-y-3">
-                <div className="text-4xl">🎡</div>
-                <div className="font-semibold text-slate-400">Chưa có câu hỏi nào</div>
+                <div className="text-4xl animate-spin-slow">🎡</div>
+                <div className="font-semibold text-slate-400">Chưa chọn học sinh</div>
                 <p className="text-xs max-w-xs mx-auto">
-                  Hãy bấm nút <strong>QUAY NGAY</strong> bên trái để vòng quay chọn học sinh và mở câu hỏi bài học!
+                  Hãy quay vòng quay để chọn học sinh, sau đó câu hỏi thử thách sẽ hiện ra ở đây.
                 </p>
               </div>
             )}
           </div>
+
         </div>
 
       </main>
 
-      {/* Cài Đặt Chung Modal */}
-      <GameSettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        onSaved={() => loadSettings()}
-      />
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-2xl rounded-2xl glass-panel p-6 border border-slate-700 shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Settings className="w-5 h-5 text-teal-400" />
+              Soạn Tên Học Sinh & Bộ Câu Hỏi
+            </h3>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-300">
+                  Danh sách học sinh trên vòng quay (mỗi dòng 1 tên):
+                </label>
+                <textarea
+                  value={customNamesText}
+                  onChange={(e) => setCustomNamesText(e.target.value)}
+                  rows={4}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-teal-500 mt-1 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300">
+                  Bộ câu hỏi trắc nghiệm (Cú pháp: Câu hỏi | Đáp án đúng | Sai 1 | Sai 2):
+                </label>
+                <textarea
+                  value={customQuizText}
+                  onChange={(e) => setCustomQuizText(e.target.value)}
+                  rows={6}
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-teal-500 mt-1 font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                className="px-5 py-2 rounded-xl text-xs font-bold bg-teal-500 hover:bg-teal-400 text-slate-950 transition font-bold"
+              >
+                Lưu Lại
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Question Bank Modal */}
       <QuestionBankModal
@@ -473,8 +575,7 @@ export default function VongQuay3DPage() {
         onSelectQuestions={(selectedQs, title) => {
           setQuestions(selectedQs);
           setQuizTitle(title);
-          setActiveQuestion(null);
-          setAnsweredState(null);
+          restartGame();
         }}
       />
 
