@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Theo Lượt — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .board-track { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+  .board-tile {
+    position: relative; width: 54px; height: 54px; border-radius: 10px;
+    background: var(--ink-100); border: 2px solid var(--ink-300);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 3px;
+  }
+  .board-tile.start { background: #dcfce7; border-color: var(--success); width: 70px; }
+  .board-tile.finish { background: linear-gradient(135deg,#facc15,#f97316); border-color: #c2410c; width: 70px; }
+  .board-tile.bonus { background: #ede9fe; border-color: #7c3aed; }
+  .tile-num { font-size: 0.68rem; font-weight: 800; color: var(--ink-500); }
+  .board-tile.finish .tile-num, .board-tile.start .tile-num { color: #7c2d12; font-size: 0.62rem; }
+  .tile-tag { font-size: 0.6rem; }
+  .tile-tokens { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; margin-top: 2px; }
+  .token-dot {
+    width: 18px; height: 18px; border-radius: 50%; color: #fff; font-size: 0.6rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,.3);
+    border: 2px solid #fff;
+  }
+  .players-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .player-chip {
+    display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
+    background: var(--surface); border: 2px solid var(--ink-100); font-weight: 700; font-size: 0.85rem;
+  }
+  .player-chip.active { border-color: var(--brand-2); background: #eef4ff; box-shadow: var(--shadow-sm); }
+  .player-chip .p-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
+  .dice-zone { text-align: center; margin: 10px 0 24px; }
+  .dice-face {
+    width: 84px; height: 84px; margin: 0 auto 16px; border-radius: 18px;
+    background: #fff; border: 3px solid var(--ink-900); box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: center; font-size: 2.4rem; font-weight: 900;
+    color: var(--ink-900); transition: transform .1s ease;
+  }
+  .dice-face.rolling { animation: diceShake .15s infinite; }
+  @keyframes diceShake { 0%,100%{ transform: rotate(-8deg) scale(1.05); } 50%{ transform: rotate(8deg) scale(0.95); } }
+  .turn-banner { text-align: center; font-weight: 800; color: var(--ink-900); margin-bottom: 6px; font-size: 1.05rem; }
+  .podium-list { display: flex; flex-direction: column; gap: 8px; max-width: 380px; margin: 0 auto 20px; }
+  .podium-row { display: flex; align-items: center; gap: 10px; background: var(--ink-100); border-radius: var(--radius-sm); padding: 10px 14px; font-weight: 700; }
+  .podium-row .p-dot { width: 14px; height: 14px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎲 Game Theo Lượt</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi &amp; người chơi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Lần lượt từng người chơi tung xúc xắc rồi trả lời câu hỏi — trả lời đúng sẽ được đi số ô bằng số chấm xúc xắc. Ô tím 💎 là ô thưởng, đi thêm 1 bước! Ai về đích (ô cuối) đầu tiên sẽ thắng.</div>
+
+      <div class="players-bar" id="playersBar"></div>
+
+      <div class="game-panel">
+        <div class="board-track" id="boardTrack"></div>
+        <div class="turn-banner" id="turnBanner">—</div>
+        <div class="dice-zone" id="diceZone">
+          <div class="dice-face" id="diceFace">🎲</div>
+          <button class="btn btn-primary btn-lg" id="rollBtn">🎲 Tung xúc xắc</button>
+        </div>
+        <div id="questionArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi &amp; người chơi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách người chơi / đội (mỗi dòng 1 tên, tối thiểu 2, tối đa 4)</label>
+        <textarea id="namesInput" rows="4"></textarea>
+        <p class="field-hint">Chỉ 4 dòng đầu tiên được sử dụng nếu bạn nhập nhiều hơn 4 tên.</p>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

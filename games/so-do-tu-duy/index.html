@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sơ Đồ Tư Duy — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .mindmap-stage {
+    position: relative;
+    width: min(100%, 660px);
+    aspect-ratio: 1 / 1;
+    margin: 30px auto 20px;
+    perspective: 900px;
+  }
+  .mm-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .mm-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    padding: 8px 10px;
+    word-break: break-word;
+  }
+  .mm-center {
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 800;
+    box-shadow: var(--shadow-lg);
+    z-index: 3;
+    padding: 10px 16px;
+  }
+  .mm-main {
+    width: 128px; min-height: 58px;
+    background: #fff;
+    border: 2.5px solid var(--brand-2);
+    color: var(--ink-900);
+    font-size: 0.86rem;
+    z-index: 2;
+  }
+  .mm-sub {
+    width: 100px; min-height: 48px;
+    font-size: 0.78rem;
+    z-index: 2;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease;
+    border: 2px dashed var(--ink-300);
+    background: var(--ink-100);
+    color: var(--ink-500);
+  }
+  .mm-sub.flip-out { transform: translate(-50%, -50%) rotateY(90deg); }
+  .mm-sub.revealed {
+    cursor: default;
+    border: 2px solid var(--success);
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: 700;
+  }
+  .mm-sub:not(.revealed):hover { border-color: var(--brand-3); background: #fff7ed; transform: translate(-50%, -50%) scale(1.06); }
+  @media (max-width: 520px) {
+    .mm-center { width: 108px; height: 108px; font-size: 0.85rem; padding: 6px 8px; }
+    .mm-main { width: 92px; min-height: 46px; font-size: 0.74rem; padding: 6px 7px; }
+    .mm-sub { width: 74px; min-height: 40px; font-size: 0.66rem; padding: 5px 6px; }
+  }
+  .mm-progress-wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🧠 Sơ Đồ Tư Duy</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn sơ đồ</button>
+        <button class="btn btn-outline" id="revealAllBtn">👁️ Hiện tất cả</button>
+        <button class="btn btn-outline" id="resetBtn">🔄 Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Cả lớp cùng khám phá sơ đồ tư duy: bấm vào các ô "❓" quanh mỗi nhánh chính để lần lượt mở ra nội dung nhánh phụ, xây dựng sơ đồ hoàn chỉnh ngay trên lớp.</div>
+
+      <div class="mm-progress-wrap">
+        <div class="scoreboard" style="margin-bottom:0;">
+          <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Đã mở: <span id="progressText">0/0</span> nhánh</div>
+        </div>
+      </div>
+
+      <div class="game-panel">
+        <div class="mindmap-stage" id="mindmapStage">
+          <svg class="mm-lines" id="mmLines" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn sơ đồ tư duy</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Chủ đề trung tâm</label>
+        <input type="text" id="topicInput" placeholder="VD: Việt Nam">
+      </div>
+      <div class="form-row">
+        <label class="field-label">Danh sách nhánh chính &amp; nhánh phụ</label>
+        <textarea id="branchInput" rows="9"></textarea>
+        <p class="field-hint">Mỗi dòng 1 nhánh chính, theo mẫu: <b>Nhánh chính | Nhánh phụ 1, Nhánh phụ 2, Nhánh phụ 3</b><br>
+        VD: <i>Địa lý | Diện tích, 63 tỉnh thành, Giáp biển Đông</i><br>
+        Nên dùng tối đa khoảng 6 nhánh chính để sơ đồ dễ nhìn. Nhánh phụ sẽ được ẩn dưới dạng "❓" cho học sinh bấm mở dần.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

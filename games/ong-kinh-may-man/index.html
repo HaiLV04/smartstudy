@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ống Kính May Mắn — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .lens-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .lens-layout { grid-template-columns: 1fr; } }
+  .lens-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .lens-holder {
+    position: relative; width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #1e293b, #0f172a);
+    box-shadow: var(--shadow-lg); overflow: hidden; border: 6px solid var(--ink-900);
+  }
+  .lens-holder video {
+    width: 100%; height: 100%; object-fit: cover; display: none; transform: scaleX(-1);
+  }
+  .lens-holder video.active { display: block; }
+  .lens-placeholder {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; color: rgba(255,255,255,0.85);
+  }
+  .lens-placeholder.hidden-lens { display: none; }
+  .lens-placeholder .lens-icon { animation: lensPulse 2.2s ease-in-out infinite; }
+  @keyframes lensPulse {
+    0%, 100% { transform: scale(1); opacity: .75; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+  .lens-ring {
+    position: absolute; inset: 14px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.25);
+    pointer-events: none;
+  }
+  .lens-flash {
+    position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; border-radius: 50%;
+  }
+  .lens-flash.flashing { animation: lensFlash .45s ease-out; }
+  @keyframes lensFlash {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .camera-status { font-size: .78rem; color: var(--ink-500); text-align: center; }
+  .picked-banner {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    color: #fff; border-radius: var(--radius-md); padding: 16px 20px;
+    text-align: center; font-weight: 800; font-size: 1.1rem; width: 100%; display: none;
+  }
+  .picked-banner.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">📸 Ống Kính May Mắn</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" onclick="SA.openModal('settingsModal')">⚙️ Soạn câu hỏi &amp; danh sách</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+
+      <div class="side-note">
+        💡 Bấm "📸 Chụp!" để ống kính ngẫu nhiên chọn ra một học sinh, sau đó bấm "Hiện câu hỏi" để bạn ấy trả lời trắc nghiệm. Nút "🎥 Bật camera trang trí" chỉ để hiển thị hình ảnh webcam cho vui (không phân tích khuôn mặt) — hoàn toàn <b>không bắt buộc</b>, game vẫn chơi đầy đủ nếu bạn không có camera hoặc từ chối cấp quyền.
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Điểm lớp: <span id="classScore">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Câu hỏi: <span id="qProgress">0/0</span></div>
+      </div>
+
+      <div class="lens-layout">
+        <div class="game-panel lens-wrap">
+          <div class="lens-holder" id="lensHolder">
+            <video id="lensVideo" autoplay playsinline muted></video>
+            <div class="lens-placeholder" id="lensPlaceholder"><span class="lens-icon">📷</span></div>
+            <div class="lens-ring"></div>
+            <div class="lens-flash" id="lensFlash"></div>
+          </div>
+          <button class="btn btn-outline btn-block" id="camBtn">🎥 Bật camera trang trí</button>
+          <div class="camera-status" id="camStatus">Camera: chưa bật (không bắt buộc)</div>
+          <button class="btn btn-primary btn-lg btn-block" id="captureBtn">📸 Chụp!</button>
+          <div class="picked-banner" id="pickedBanner"></div>
+        </div>
+
+        <div class="game-panel">
+          <div id="questionArea">
+            <div class="empty-state">
+              <div class="emoji">📸</div>
+              <p>Hãy bấm "Chụp!" để ống kính may mắn chọn ngẫu nhiên một học sinh, sau đó câu hỏi sẽ hiện ra ở đây.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi &amp; danh sách tên</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách tên (mỗi dòng 1 tên)</label>
+        <textarea id="namesInput" rows="6"></textarea>
+        <p class="field-hint">Có thể là tên học sinh, tổ, hoặc nhóm. Tối thiểu 2 tên.</p>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đèn Giao Thông Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚦</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .light-layout { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 780px) { .light-layout { grid-template-columns: 1fr; } }
+  .traffic-light {
+    background: #1e293b; border-radius: 20px; padding: 16px 12px;
+    display: flex; flex-direction: column; gap: 12px; align-items: center;
+    box-shadow: var(--shadow-md);
+  }
+  .light-bulb {
+    width: 46px; height: 46px; border-radius: 50%; background: #334155;
+    opacity: .35; transition: opacity .25s ease, box-shadow .25s ease;
+  }
+  .light-bulb.red.active { background: #ef4444; opacity: 1; box-shadow: 0 0 22px 6px rgba(239,68,68,.7); }
+  .light-bulb.yellow.active { background: #facc15; opacity: 1; box-shadow: 0 0 22px 6px rgba(250,204,21,.7); }
+  .light-bulb.green.active { background: #22c55e; opacity: 1; box-shadow: 0 0 22px 6px rgba(34,197,94,.7); }
+  .countdown-bar-wrap {
+    height: 10px; border-radius: 999px; background: var(--ink-100); overflow: hidden; margin: 4px 0 18px;
+    border: 1px solid var(--ink-300);
+  }
+  .countdown-bar { height: 100%; width: 100%; background: var(--success); transition: width .08s linear, background .2s ease; }
+  .statement-box {
+    text-align: center; padding: 10px 10px 6px;
+  }
+  .statement-text {
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem); font-weight: 800; color: var(--ink-900);
+    max-width: 640px; margin: 0 auto 22px;
+  }
+  .tf-actions { display: flex; gap: 16px; justify-content: center; }
+  .tf-btn { flex: 1; max-width: 220px; padding: 18px; font-size: 1.05rem; border-radius: var(--radius-md); }
+  .tf-btn.tf-true { background: #f0fdf4; border: 2.5px solid var(--success); color: #15803d; }
+  .tf-btn.tf-false { background: #fef2f2; border: 2.5px solid var(--danger); color: #b91c1c; }
+  .tf-btn:disabled { opacity: .55; }
+  .tf-btn.picked-correct { background: var(--success); color: #fff; }
+  .tf-btn.picked-wrong { background: var(--danger); color: #fff; }
+  .flash-correct { animation: flashGreen .5s ease; }
+  .flash-wrong { animation: flashRed .5s ease; }
+  @keyframes flashGreen { 0%,100% { background: var(--surface); } 50% { background: #dcfce7; } }
+  @keyframes flashRed { 0%,100% { background: var(--surface); } 50% { background: #fee2e2; } }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🚦 Đèn Giao Thông Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Đọc phát biểu rồi bấm nhanh "🟢 Đúng" hoặc "🔴 Sai" trước khi đèn chuyển sang đỏ (4 giây). Trả lời đúng và kịp thời sẽ ghi điểm!</div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Điểm: <span id="scoreStat">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Câu: <span id="qStat">0/0</span></div>
+      </div>
+
+      <div class="light-layout">
+        <div class="traffic-light">
+          <div class="light-bulb red" id="bulbRed"></div>
+          <div class="light-bulb yellow" id="bulbYellow"></div>
+          <div class="light-bulb green" id="bulbGreen"></div>
+        </div>
+
+        <div class="game-panel" id="gamePanel">
+          <div class="countdown-bar-wrap"><div class="countdown-bar" id="countdownBar"></div></div>
+          <div id="questionArea"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi Đúng/Sai</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách phát biểu Đúng/Sai (mỗi dòng 1 câu)</label>
+        <textarea id="tfInput" rows="12"></textarea>
+        <p class="field-hint">Định dạng: <b>Nội dung phát biểu | true</b> hoặc <b>Nội dung phát biểu | false</b>. Ví dụ: <i>Mặt Trời mọc ở hướng Tây | false</i></p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

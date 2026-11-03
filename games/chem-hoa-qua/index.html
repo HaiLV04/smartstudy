@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chém Hoa Quả Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍉</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .fruit-stage {
+    position: relative; height: 420px; border-radius: var(--radius-lg); overflow: hidden;
+    background: linear-gradient(180deg, #dff6ff, #eafff3);
+    border: 2px dashed var(--ink-300);
+  }
+  .fruit-q-banner {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    text-align: center; padding: 14px 16px;
+    background: rgba(15,23,42,0.85); color: #fff; font-weight: 800; font-size: 1.05rem;
+  }
+  .fruit {
+    position: absolute; bottom: -90px; width: 108px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    cursor: pointer; user-select: none; will-change: transform;
+  }
+  .fruit .emoji { font-size: 2.6rem; filter: drop-shadow(0 6px 6px rgba(0,0,0,.18)); }
+  .fruit .label {
+    background: #fff; border-radius: 999px; padding: 4px 10px;
+    font-weight: 800; font-size: .78rem; box-shadow: var(--shadow-sm);
+    max-width: 108px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .fruit.sliced .emoji { animation: sliceAnim .4s ease forwards; }
+  .fruit.sliced .label { background: var(--success); color: #fff; }
+  .fruit.wrong-pick .label { background: var(--danger); color: #fff; }
+  @keyframes sliceAnim { to { transform: scale(1.5) rotate(25deg); opacity: 0; } }
+  .fruit.frozen { animation-play-state: paused; }
+  .timer-track { height: 8px; border-radius: 999px; background: var(--ink-100); overflow: hidden; margin-bottom: 16px; }
+  .timer-fill { height: 100%; background: linear-gradient(90deg,var(--brand-1),var(--brand-2)); width: 100%; }
+  .fruit-footer { display:flex; justify-content:center; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🍉 Chém Hoa Quả Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Các đáp án bay ngang qua màn hình dạng hoa quả — nhấn/chạm vào quả có đáp án đúng trước khi hết giờ!</div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Điểm: <span id="score">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-2);"></span> Câu hỏi: <span id="qProgress">0/0</span></div>
+      </div>
+
+      <div class="game-panel">
+        <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+        <div class="fruit-stage" id="fruitStage">
+          <div class="fruit-q-banner" id="qBanner">Bấm "Bắt đầu" để chơi</div>
+        </div>
+        <div class="fruit-footer">
+          <button class="btn btn-primary btn-lg" id="startBtn">🍉 Bắt đầu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="9"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Nên dùng đáp án ngắn gọn để hiển thị đẹp trên quả.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

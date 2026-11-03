@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xây Tháp Tri Thức — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏗️</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .tower-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 780px) { .tower-layout { grid-template-columns: 1fr; } }
+  .tower-wrap {
+    position: relative; height: 440px; border-radius: var(--radius-md); overflow: hidden;
+    background: linear-gradient(180deg, #e0f2fe 0%, #f8fafc 70%);
+    border: 2px solid var(--ink-300);
+  }
+  .tower-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 14px; background: #78716c; }
+  .tower-blocks {
+    position: absolute; left: 50%; bottom: 14px; display: flex; flex-direction: column-reverse;
+    align-items: center;
+  }
+  .tower-block {
+    width: 92px; height: 32px; margin-bottom: 2px; border-radius: 6px;
+    box-shadow: var(--shadow-sm); border: 2px solid rgba(0,0,0,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: #fff; font-size: .78rem; text-shadow: 0 1px 2px rgba(0,0,0,.3);
+    animation: blockDrop .35s ease;
+  }
+  @keyframes blockDrop { from { transform: translateY(-60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .tower-blocks.wobble-1 .tower-block { animation: wobbleSm 1.2s ease-in-out infinite; }
+  .tower-blocks.wobble-2 .tower-block { animation: wobbleLg 0.7s ease-in-out infinite; }
+  @keyframes wobbleSm { 0%,100% { margin-left: -2px; } 50% { margin-left: 2px; } }
+  @keyframes wobbleLg { 0%,100% { margin-left: -6px; } 50% { margin-left: 6px; } }
+  .tower-stats { display: flex; flex-direction: column; gap: 14px; }
+  .tower-stat-card {
+    background: var(--surface); border: 1px solid var(--ink-100); border-radius: var(--radius-md);
+    padding: 14px 16px; box-shadow: var(--shadow-sm);
+  }
+  .tower-stat-card b { display: block; font-size: 1.5rem; font-weight: 800; color: var(--brand-2); }
+  .tower-stat-card span { font-size: .78rem; color: var(--ink-500); font-weight: 600; }
+  .tower-stat-card.danger b { color: var(--danger); }
+  .instability-bar { display: flex; gap: 4px; margin-top: 6px; }
+  .instability-bar .pip { flex: 1; height: 8px; border-radius: 4px; background: var(--ink-100); }
+  .instability-bar .pip.on { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🏗️ Xây Tháp Tri Thức</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Xây lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Mỗi câu trả lời đúng sẽ xếp thêm một khối vào tháp. Trả lời sai không làm mất khối, nhưng khiến tháp rung lắc mạnh hơn — sai liên tiếp 3 lần tháp sẽ đổ sập!</div>
+
+      <div class="tower-layout">
+        <div class="tower-stats">
+          <div class="tower-stat-card"><b id="qStat">0/0</b><span>Câu đã trả lời</span></div>
+          <div class="tower-stat-card"><b id="blockStat">0</b><span>Số khối đã xây</span></div>
+          <div class="tower-stat-card danger">
+            <b id="wobbleStat">Ổn định</b><span>Độ rung lắc (sai liên tiếp)</span>
+            <div class="instability-bar"><div class="pip" data-pip="0"></div><div class="pip" data-pip="1"></div><div class="pip" data-pip="2"></div></div>
+          </div>
+        </div>
+
+        <div class="game-panel">
+          <div class="tower-layout" style="grid-template-columns: 200px 1fr; gap: 18px;">
+            <div class="tower-wrap">
+              <div class="tower-ground"></div>
+              <div class="tower-blocks" id="towerBlocks"></div>
+            </div>
+            <div id="questionArea"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm</label>
+        <textarea id="quizInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Xây xong hết bộ câu hỏi mà tháp còn đứng vững là chiến thắng!</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

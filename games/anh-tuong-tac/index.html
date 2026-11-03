@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ảnh Tương Tác — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .scene {
+    position: relative;
+    width: 100%;
+    min-height: 380px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: linear-gradient(to bottom, #7dd3fc 0%, #bae6fd 44%, #86efac 46%, #4ade80 100%);
+    box-shadow: inset 0 0 0 1px rgba(15,23,42,0.06);
+    margin-bottom: 6px;
+  }
+  .scene-deco { position: absolute; font-size: clamp(2.2rem, 6vw, 3.6rem); pointer-events: none; user-select: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
+  .scene-pin {
+    position: absolute; transform: translate(-50%, -100%);
+    width: 40px; height: 40px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.9rem; transition: transform 0.15s ease;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.25));
+  }
+  .scene-pin:hover { transform: translate(-50%, -100%) scale(1.15); }
+  .scene-pin .pin-badge {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--brand-3); color: #fff; font-size: 0.62rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+  }
+  .scene-pin.done .pin-badge { background: var(--success); }
+  .scene-pin.done { filter: drop-shadow(0 3px 4px rgba(34,197,94,0.4)); }
+  .hotspot-panel-wrap { margin-top: 18px; }
+  .hotspot-label { font-weight: 700; color: var(--brand-2); font-size: 0.82rem; margin-bottom: 4px; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">📍 Ảnh Tương Tác</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn điểm khám phá</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Làm lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Bấm vào từng điểm 📍 trên hình để mở câu hỏi liên quan. Trả lời đúng để đánh dấu hoàn thành điểm đó — trả lời sai có thể thử lại ngay!</div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--success);"></span> Đã hoàn thành: <span id="progressText">0/0</span> điểm</div>
+      </div>
+
+      <div class="game-panel">
+        <div class="scene" id="scene"></div>
+        <div class="hotspot-panel-wrap" id="hotspotPanel">
+          <div class="empty-state">
+            <div class="emoji">🖼️</div>
+            <p>Chọn một điểm 📍 trên hình để bắt đầu khám phá!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn điểm khám phá</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách điểm khám phá (tối đa 6 điểm)</label>
+        <textarea id="hotspotInput" rows="9"></textarea>
+        <p class="field-hint">Mỗi dòng 1 điểm, theo mẫu: <b>Nhãn ngắn | Câu hỏi | Đáp án đúng | Sai 1 | Sai 2</b><br>
+        VD: <i>Cây xanh | Cây xanh hấp thụ khí gì để quang hợp? | CO2 | Oxy | Nitơ</i><br>
+        Các điểm được đặt sẵn ở 6 vị trí cố định trên hình minh hoạ — chỉ cần điền nội dung theo đúng thứ tự dòng.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

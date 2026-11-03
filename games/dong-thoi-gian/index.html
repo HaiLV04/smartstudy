@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sắp Xếp Dòng Thời Gian — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕰️</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .timeline-wrap { display: flex; gap: 14px; align-items: flex-start; }
+  .timeline-rail {
+    width: 3px; align-self: stretch; margin-top: 28px;
+    background: repeating-linear-gradient(180deg, var(--ink-300) 0 6px, transparent 6px 12px);
+    flex-shrink: 0;
+  }
+  .timeline-container { position: relative; flex: 1; }
+  .timeline-card {
+    position: absolute; left: 0; right: 0; top: 0;
+    height: 56px; margin-bottom: 16px;
+    background: #fff; border: 2.5px solid var(--ink-300); border-radius: var(--radius-md);
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    box-shadow: var(--shadow-sm);
+    cursor: grab; touch-action: none; user-select: none;
+    transition: top .25s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .timeline-card .tl-num {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--ink-100); color: var(--ink-700);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; flex-shrink: 0;
+  }
+  .timeline-card .tl-text { flex: 1; font-weight: 700; font-size: .92rem; color: var(--ink-900); }
+  .timeline-card .tl-handle { color: var(--ink-300); font-size: 1.1rem; flex-shrink: 0; }
+  .timeline-card.dragging { cursor: grabbing; z-index: 50; box-shadow: var(--shadow-lg); transition: none; border-color: var(--brand-2); }
+  .timeline-card.correct { border-color: var(--success); background: #f0fdf4; }
+  .timeline-card.correct .tl-num { background: var(--success); color: #fff; }
+  .timeline-card.incorrect { border-color: var(--danger); background: #fef2f2; }
+  .timeline-card.incorrect .tl-num { background: var(--danger); color: #fff; }
+  .timeline-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; flex-wrap: wrap; gap: 12px; }
+  .timeline-status { font-weight: 700; font-size: .9rem; color: var(--ink-500); }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🕰️ Sắp Xếp Dòng Thời Gian</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn sự kiện</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Xáo lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Kéo các thẻ sự kiện lên/xuống để sắp xếp theo đúng thứ tự thời gian (từ sớm nhất đến muộn nhất), rồi bấm "Kiểm tra thứ tự". Thẻ đúng vị trí sẽ chuyển xanh, thẻ sai chuyển đỏ — cứ kéo lại và kiểm tra cho đến khi đúng hết!</div>
+
+      <div class="game-panel">
+        <div class="timeline-wrap">
+          <div class="timeline-rail"></div>
+          <div class="timeline-container" id="timelineContainer"></div>
+        </div>
+        <div class="timeline-actions">
+          <div class="timeline-status" id="timelineStatus">Kéo thẻ để sắp xếp, sau đó bấm kiểm tra.</div>
+          <button class="btn btn-primary" id="checkOrderBtn">✅ Kiểm tra thứ tự</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn danh sách sự kiện</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách sự kiện (theo đúng thứ tự)</label>
+        <textarea id="eventsInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 sự kiện, nhập theo ĐÚNG thứ tự thời gian/logic — trò chơi sẽ tự xáo trộn để học sinh sắp xếp lại. Có thể dùng cho mốc lịch sử, các bước quy trình, thứ tự sự kiện trong truyện... Nên dùng 5–8 dòng.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

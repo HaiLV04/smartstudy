@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bàn Dựng Prompt Thầy Huy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: navy course-portal hero with student login, cream workspace below — form + library left, navy prompt monitor pinned right. Single deliberate light look. */
+:root{
+  --navy:#0F1B4C; --navy2:#1E3A8A; --sky:#7DD3FC; --amber:#F59E0B; --amber-ink:#1F1300;
+  --cream:#FAF5EE; --panel:#FFFFFF; --ink:#1B2433; --muted:#5E6676; --line:#E6DED2; --line2:#EEE8DE;
+  --green:#134E4A; --field:#FFFDF9; --soft:#EEF4FF; --rec:#EF4444;
+  --mon-bg:#0F1B4C; --mon-fg:#EEF2FF; --mon-dim:#A5B4DC; --mon-line:rgba(165,180,220,.2);
+  --f-body:"Be Vietnam Pro","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,Menlo,monospace;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--cream);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+
+/* Header */
+.top{background:#fff;border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-block:12px;flex-wrap:wrap}
+.mark{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-weight:800;font-size:16px}
+.who b{display:block;font-size:17px;font-weight:800;color:var(--navy);line-height:1.2}
+.who small{display:block;font-size:13px;color:var(--muted);font-weight:500}
+.status{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600}
+.status .st{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:#FDECEC;color:#B42318}
+.status .st i{width:8px;height:8px;border-radius:50%;background:currentColor}
+body:not(.locked) .status .st{background:#E7F7EE;color:#137A43}
+.status button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:6px 12px;font-size:13px;font-weight:600}
+body.locked .status button{display:none}
+
+/* Hero */
+.hero{background:linear-gradient(120deg,#0F1B4C 0%,#172A6E 45%,#1E3A8A 100%);color:#fff;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-120px;top:-120px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(125,211,252,.18),transparent 65%);pointer-events:none}
+.hero .wrap{position:relative;z-index:1;padding-block:56px 60px;display:grid;grid-template-columns:1.3fr 1fr;gap:44px;align-items:center}
+.eyebrow{display:inline-block;padding:7px 16px;border:1px solid rgba(255,255,255,.3);border-radius:999px;background:rgba(255,255,255,.08);font-size:13.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.hero h1{font-weight:800;font-size:clamp(34px,5.4vw,60px);line-height:1.1;letter-spacing:-.02em;margin:22px 0 16px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--sky)}
+.hero p{margin:0;color:rgba(238,242,255,.86);max-width:60ch;font-size:17px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chips span{padding:9px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);font-size:14.5px;font-weight:500}
+.chips b{color:var(--sky);font-weight:700}
+
+/* Login */
+.login{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:26px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.login h2{margin:0 0 4px;font-size:22px;font-weight:800}
+.login p{font-size:14.5px;margin:0 0 18px;color:rgba(238,242,255,.78)}
+.login label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:rgba(238,242,255,.9)}
+.pw{display:flex;gap:8px}
+.pw input{flex:1;min-width:0;font:inherit;font-size:16px;padding:13px 15px;border-radius:12px;border:1.5px solid rgba(255,255,255,.3);background:rgba(7,14,40,.45);color:#fff}
+.pw input::placeholder{color:rgba(238,242,255,.5)}
+.pw input:focus{outline:none;border-color:var(--sky)}
+.eye{border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:12px;padding:0 13px;font-size:13px;font-weight:600}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.b-amber{border:0;border-radius:12px;padding:14px 24px;background:var(--amber);color:var(--amber-ink);font-weight:700;font-size:16px;transition:.15s}
+.b-amber:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.b-line{border:1.5px solid rgba(255,255,255,.6);border-radius:12px;padding:13px 22px;background:transparent;color:#fff;font-weight:700;font-size:16px;text-decoration:none;display:inline-flex;align-items:center}
+.b-line:hover{background:rgba(255,255,255,.1)}
+.err{min-height:22px;margin-top:10px;font-size:14px;font-weight:600;color:#FCA5A5}
+.welcome{display:none}
+body:not(.locked) .login form{display:none}
+body:not(.locked) .welcome{display:block}
+.welcome .ok-ic{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(34,197,94,.18);color:#86EFAC;margin-bottom:10px}
+
+/* Section title */
+.sec{padding-block:56px 22px}
+.sec h2{margin:0;font-size:clamp(28px,3.6vw,40px);font-weight:800;color:var(--green);letter-spacing:-.015em}
+.sec p{margin:8px 0 0;color:var(--muted);max-width:66ch}
+
+/* App */
+.app{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,450px);grid-template-areas:"form mon" "lib mon";gap:24px;align-items:start;padding-bottom:64px;position:relative}
+.form{grid-area:form}.lib{grid-area:lib}.mon{grid-area:mon;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 1px 2px rgba(15,27,76,.04),0 12px 32px -18px rgba(15,27,76,.18)}
+.box h2{font-size:22px;font-weight:800;margin:0;color:var(--navy);line-height:1.25}
+.box .lead{color:var(--muted);font-size:14.5px;margin:4px 0 20px}
+.headrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* Locked state */
+body.locked .app .form,body.locked .app .lib{filter:blur(3px) grayscale(.3);opacity:.6;user-select:none}
+body.locked .out{filter:blur(7px);user-select:none}
+body.locked .scr-f,body.locked .shot{opacity:.45}
+.lockcard{display:none}
+body.locked .lockcard{display:flex;position:absolute;left:50%;top:120px;transform:translateX(-50%);z-index:5;flex-direction:column;align-items:center;text-align:center;gap:10px;width:min(420px,calc(100% - 8px));background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 24px;box-shadow:0 24px 60px -20px rgba(15,27,76,.45)}
+.lockcard .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:var(--soft);color:var(--navy2)}
+.lockcard b{font-size:19px;color:var(--navy)}
+.lockcard span{color:var(--muted);font-size:14.5px}
+.lockcard .b-amber{margin-top:6px}
+.lockcard .zalo{display:block;width:100%;padding:10px 12px;border-radius:12px;background:#E8F1FF;color:var(--navy);font-size:14.5px;line-height:1.5}
+.lockcard .zalo b{color:#0068FF;font-size:16px;letter-spacing:.02em;user-select:all}
+.login .zalo{margin:-6px 0 14px;font-size:14px;color:rgba(238,242,255,.85)}
+.login .zalo b{color:var(--sky);user-select:all}
+
+/* Mode switch */
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--soft);margin-bottom:22px}
+.mode button{border:0;border-radius:10px;padding:11px 10px;background:transparent;color:var(--navy2);font-weight:700;font-size:14.5px;line-height:1.3}
+.mode button small{display:block;font-weight:500;font-size:12px;opacity:.8}
+.mode button[aria-pressed="true"]{background:var(--navy2);color:#fff;box-shadow:0 8px 18px -10px var(--navy2)}
+
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-size:14px;font-weight:700;color:var(--ink)}
+.f label small{font-weight:400;color:var(--muted);font-size:13px}
+.f input,.f textarea,.f select{width:100%;font:inherit;font-size:15.5px;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;transition:border-color .15s,box-shadow .15s}
+.f textarea{min-height:104px;resize:vertical;line-height:1.55}
+.f input::placeholder,.f textarea::placeholder{color:#9AA0AB}
+.f input:focus,.f textarea:focus,.f select:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 4px rgba(30,58,138,.12)}
+.f input:disabled,.f select:disabled{opacity:.5}
+.hint{font-size:13px;color:var(--muted)}
+.voicebox{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px;border-radius:14px;background:var(--soft)}
+.voicebox .f label{font-size:12.5px;color:var(--navy2)}
+@media (max-width:720px){.voicebox{grid-template-columns:1fr 1fr}}
+.fx{display:flex;flex-wrap:wrap;gap:8px}
+.fx label{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid var(--line);border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;user-select:none;background:#fff}
+.fx input{accent-color:var(--navy2);width:16px;height:16px;margin:0}
+.fx label:has(input:checked){border-color:var(--navy2);background:var(--soft);color:var(--navy2)}
+
+/* Library */
+.lib.off .tiles{pointer-events:none;opacity:.45}
+.libbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.libbar input{flex:1 1 200px;min-width:0;font:inherit;font-size:15.5px;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:11px;padding:11px 14px}
+.libbar input:focus{outline:none;border-color:var(--navy2)}
+.ghost{border:1.5px solid var(--navy2);background:#fff;color:var(--navy2);border-radius:11px;padding:10px 16px;font-weight:700;font-size:14px}
+.ghost:hover{background:var(--soft)}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 18px;padding-bottom:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{white-space:nowrap;border:1.5px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:600}
+.tabs button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.grp{margin-bottom:20px}
+.grp h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;gap:10px;align-items:baseline;font-weight:600}
+.grp h3 span{color:var(--green);letter-spacing:0;text-transform:none;font-size:16px;font-weight:800;order:-1}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:8px}
+.tile{text-align:left;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;min-width:0;transition:.15s}
+.tile .no{grid-row:1/3;font-weight:800;font-size:13px;color:var(--navy2);background:var(--soft);border-radius:8px;width:30px;height:30px;display:grid;place-items:center}
+.tile b{font-size:14px;font-weight:600;line-height:1.3}
+.tile code{font-family:var(--f-mono);font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.tile:hover{border-color:var(--navy2)}
+.tile[aria-pressed="true"]{border-color:var(--amber);background:#FFF7E6}
+.tile[aria-pressed="true"] .no{background:var(--amber);color:var(--amber-ink)}
+.empty{color:var(--muted);text-align:center;padding:18px}
+
+/* Monitor */
+.screen{background:linear-gradient(160deg,#0F1B4C,#16286A);color:var(--mon-fg);border-radius:20px;overflow:hidden;box-shadow:0 30px 60px -28px rgba(15,27,76,.6)}
+.scr-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--mon-line);font-size:15px;font-weight:700}
+.scr-h .dot{width:9px;height:9px;border-radius:50%;background:var(--amber)}
+.scr-h .pill{margin-left:auto;border-radius:999px;padding:4px 11px;background:rgba(125,211,252,.16);color:var(--sky);font-size:12px;font-weight:600}
+.shot{padding:12px 20px;border-bottom:1px solid var(--mon-line);display:flex;gap:12px;align-items:center;min-height:50px}
+.shot .lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--mon-dim)}
+.shot .val{font-weight:700;font-size:14.5px;color:var(--amber);overflow-wrap:anywhere;min-width:0}
+.out{margin:0;padding:20px;white-space:pre-wrap;word-break:break-word;font-family:var(--f-body);font-size:14.5px;line-height:1.7;max-height:min(56vh,560px);overflow:auto;transition:filter .3s}
+.out .hd{color:var(--sky);font-weight:800;letter-spacing:.02em}
+.out mark{background:rgba(245,158,11,.16);color:#FCD34D;font-family:var(--f-mono);font-weight:700;font-size:13px;padding:2px 6px;border-radius:6px}
+.out q{color:#FFFFFF;font-weight:600}
+.out q::before,.out q::after{content:""}
+.scr-f{display:grid;grid-template-columns:1fr auto;gap:10px;padding:16px 20px 20px;border-top:1px solid var(--mon-line)}
+.btn{border:0;border-radius:12px;padding:14px 18px;font-weight:700;font-size:16px;background:var(--amber);color:var(--amber-ink)}
+.btn:hover{filter:brightness(1.07)}
+.btn2{border:1.5px solid rgba(255,255,255,.45);background:transparent;color:#fff;border-radius:12px;padding:12px 15px;font-weight:700;font-size:14px}
+.btn2:hover{background:rgba(255,255,255,.08)}
+.btn2[disabled]{opacity:.4;cursor:not-allowed}
+.meta{display:flex;justify-content:space-between;gap:10px;padding:0 20px 16px;font-size:12.5px;color:var(--mon-dim)}
+.ok{background:#22C55E!important;color:#fff!important;border-color:#22C55E!important}
+
+/* CTA */
+.cta{background:linear-gradient(120deg,#0F1B4C,#1E3A8A);color:#fff}
+.cta .wrap{padding-block:60px}
+.cta .eyebrow{color:#fff}
+.cta h2{font-weight:800;font-size:clamp(28px,4.2vw,46px);line-height:1.12;margin:18px 0 12px;text-wrap:balance;letter-spacing:-.015em}
+.cta h2 em{font-style:normal;color:var(--sky)}
+.cta p{margin:0;color:rgba(238,242,255,.82);max-width:60ch}
+footer{background:#0B1438;color:rgba(238,242,255,.7)}
+footer .wrap{padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,24px);opacity:0;background:var(--navy);color:#fff;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:600;max-width:calc(100vw - 32px);transition:.2s;pointer-events:none;z-index:50;box-shadow:0 14px 30px -12px rgba(15,27,76,.6)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-areas:"form" "mon" "lib"}
+  .mon{position:static}
+  .hero .wrap{grid-template-columns:1fr;gap:30px}
+}
+@media (max-width:560px){.fields{grid-template-columns:1fr}.hero .wrap{padding-block:36px 40px}.box{padding:18px}.tiles{grid-template-columns:1fr 1fr}.tile code{display:none}.scr-f{grid-template-columns:1fr}.status .st span{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="mark" aria-hidden="true">LH</div>
+  <div class="who"><b>Bàn Dựng Prompt Video AI</b><small>PGS.TS. Lê Thanh Huy · 2026</small></div>
+  <div class="status"><span class="st"><i aria-hidden="true"></i><span id="stTxt">Chưa đăng nhập</span></span><button type="button" id="logout">Đăng xuất</button></div>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">Google Flow · Talking head · 56 cú máy zoom</span>
+    <h1>Biến lời thoại thành <em>prompt video AI</em> hoàn chỉnh</h1>
+    <p>Từ khoá hot bật lên theo giọng nói, icon 3D, Hologram UI, VFX và âm thanh sống động. Ghép thêm cú siêu zoom điện ảnh, hoặc chỉ dùng prompt gốc.</p>
+    <div class="chips"><span><b>56</b> cú máy zoom</span><span><b>18</b> ngôn ngữ</span><span><b>50+</b> giọng vùng miền</span><span>Copy một chạm</span></div>
+  </div>
+  <div class="login" id="login">
+    <form id="loginForm" autocomplete="off">
+      <h2>Đăng nhập học viên</h2>
+      <p>Nhập mật khẩu lớp học để mở khoá prompt và các chức năng.</p>
+      <p class="zalo">Để đăng nhập, liên hệ Zalo: <b>0983027581</b> (PGS.TS. Lê Thanh Huy)</p>
+      <label for="pw">Mật khẩu học viên</label>
+      <div class="pw"><input id="pw" type="password" placeholder="Nhập mật khẩu…" autocomplete="off"><button class="eye" type="button" id="eye">Hiện</button></div>
+      <div class="actions"><button class="b-amber" type="submit">Đăng nhập học tập →</button><a class="b-line" href="#ws">Xem nội dung</a></div>
+      <div class="err" id="err" role="alert"></div>
+    </form>
+    <div class="welcome">
+      <span class="ok-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <h2>Đã mở khoá</h2>
+      <p>Chào mừng học viên. Toàn bộ chức năng đã sẵn sàng bên dưới.</p>
+      <div class="actions"><a class="b-amber" href="#ws" style="text-decoration:none">Bắt đầu dựng prompt →</a></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="wrap sec" id="ws">
+  <h2>Bàn dựng prompt</h2>
+  <p>Nhập nội dung bên trái, prompt hoàn chỉnh hiện ngay trên màn hình bên phải.</p>
+</section>
+
+<section class="wrap app" id="app">
+  <div class="lockcard" id="lockcard">
+    <div class="ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>
+    <b>Nội dung dành cho học viên</b>
+    <span>Đăng nhập bằng mật khẩu lớp học để xem prompt gốc và dùng các chức năng.</span>
+    <span class="zalo">Để đăng nhập, liên hệ Zalo: <b>0983027581</b><br>(PGS.TS. Lê Thanh Huy)</span>
+    <button class="b-amber" type="button" id="goLogin">Đăng nhập ngay</button>
+  </div>
+  <div class="form box">
+    <div class="headrow"><h2>Nội dung video</h2><button class="ghost" type="button" id="loadSample">Nạp mẫu thầy Huy</button></div>
+    <p class="lead">Mọi ô đều có thể sửa. Prompt bên cạnh tự cập nhật.</p>
+    <div class="mode" role="group" aria-label="Chế độ tạo prompt">
+      <button type="button" id="mZoom" aria-pressed="true">Ghép Zoom + Prompt<small>Thêm cú siêu zoom</small></button>
+      <button type="button" id="mBase" aria-pressed="false">Chỉ prompt gốc<small>Không dùng code zoom</small></button>
+    </div>
+    <div class="fields">
+      <div class="f full">
+        <label for="txt">Lời thoại <small>(tự gõ, đọc nguyên văn, giữ nguyên chính tả)</small></label>
+        <textarea id="txt" placeholder="Gõ chữ sẽ hiện trên video, vd. AI KHÔNG LÀM HẾT VIỆC CHO CHÚNG TA, NHƯNG NẾU BẠN GIỎI AI THÌ SẼ LÀM VIỆC HIỆU QUẢ HƠN…"></textarea>
+      </div>
+      <div class="f full">
+        <label for="style">Cách hiện chữ trên video</label>
+        <select id="style">
+          <option value="hot">Chỉ hiện từ khoá hot, khớp giọng nói (không karaoke)</option>
+          <option value="full">Hiện từng từ/cụm từ bám sát giọng đọc</option>
+          <option value="none">Không hiện chữ, chỉ hình minh hoạ</option>
+        </select>
+      </div>
+      <div class="f full">
+        <label for="kw">Từ khoá hot &amp; biểu tượng 3D <small>(mỗi dòng: TỪ KHOÁ → biểu tượng; để trống thì AI tự chọn)</small></label>
+        <textarea id="kw" placeholder="SOẠN BÀI NHANH → tia sét và đồng hồ 3D&#10;CHINH PHỤC AI → robot AI, chip AI phát sáng&#10;NHÓM ZALO → điện thoại có bong bóng tin nhắn 3D"></textarea>
+        <div class="hint">Có thể dùng →, -&gt;, | hoặc dấu : để ngăn từ khoá với biểu tượng.</div>
+      </div>
+      <div class="f full"><label>Giọng đọc</label>
+        <div class="voicebox">
+          <div class="f"><label for="lang"><small>Ngôn ngữ</small></label><select id="lang"></select></div>
+          <div class="f"><label for="gender"><small>Người đọc</small></label><select id="gender">
+            <option value="nam">Nam</option><option value="nữ">Nữ</option>
+            <option value="bé trai">Trẻ em – bé trai</option><option value="bé gái">Trẻ em – bé gái</option></select></div>
+          <div class="f" id="regionF"><label for="region"><small>Vùng miền / tỉnh</small></label><select id="region"></select></div>
+          <div class="f"><label for="tone"><small>Sắc thái</small></label><select id="tone">
+            <option>nhẹ nhàng, ấm áp</option><option>trầm ấm, chuyên nghiệp</option><option>truyền cảm, sâu lắng</option>
+            <option>vui tươi, năng động</option><option>hào hứng, tràn đầy năng lượng</option><option>rõ ràng, chậm rãi</option>
+            <option>thân thiện, gần gũi</option><option>hồn nhiên, trong trẻo</option></select></div>
+        </div>
+        <div class="hint" id="voiceSum"></div>
+      </div>
+      <div class="f">
+        <label for="ratio">Khung hình</label>
+        <select id="ratio">
+          <option value="">Không ghi</option>
+          <option value="9:16">9:16 dọc (Reels, TikTok)</option>
+          <option value="16:9">16:9 ngang (YouTube)</option>
+          <option value="1:1">1:1 vuông</option>
+        </select>
+      </div>
+      <div class="f full">
+        <label for="scene">Nhân vật & bối cảnh <small>(tuỳ chọn)</small></label>
+        <input id="scene" placeholder="vd. thầy giáo mặc vest xanh, phòng làm việc có giá sách" autocomplete="off">
+      </div>
+      <div class="f">
+        <label for="subj">Chủ thể cho code zoom <small>(tiếng Anh)</small></label>
+        <input id="subj" placeholder="vd. a male teacher" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="f">
+        <label for="pos">Vị trí cú zoom</label>
+        <select id="pos">
+          <option value="open">Mở đầu video</option>
+          <option value="mid">Chuyển cảnh giữa video</option>
+          <option value="end">Kết video (zoom ngược ra)</option>
+        </select>
+      </div>
+      <div class="f full">
+        <label for="cta">Lời kêu gọi cuối video <small>(tự gõ, tuỳ chọn)</small></label>
+        <input id="cta" autocomplete="off" placeholder="vd. Tham gia học tập cùng thầy Huy để tạo ra video ấn tượng">
+      </div>
+      <div class="f full">
+        <label>Hiệu ứng hình ảnh &amp; âm thanh</label>
+        <div class="fx" id="fx"></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="mon" aria-label="Prompt hoàn chỉnh">
+    <div class="screen">
+      <div class="scr-h"><i class="dot" aria-hidden="true"></i>Prompt hoàn chỉnh<span class="pill" id="pill">Zoom + Prompt</span></div>
+      <div class="shot"><span class="lbl">Cú máy</span><span class="val" id="shotVal">—</span></div>
+      <pre class="out" id="out"></pre>
+      <div class="meta"><span id="count">0 ký tự</span><span id="words">0 từ lời thoại</span></div>
+      <div class="scr-f">
+        <button class="btn" type="button" id="copyAll">Copy prompt</button>
+        <button class="btn2" type="button" id="copyCode">Copy code zoom</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="lib box" id="lib">
+    <h2>Thư viện cú máy siêu zoom</h2>
+    <p class="lead">Chọn một cú máy. Camera bay từ toàn cảnh thẳng vào nhân vật của bạn.</p>
+    <div class="libbar">
+      <input id="q" type="search" placeholder="Tìm: biển, drone, city, thác nước…" autocomplete="off" aria-label="Tìm cú máy">
+      <button class="ghost" type="button" id="rand">Chọn ngẫu nhiên</button>
+    </div>
+    <div class="tabs" id="tabs" role="group" aria-label="Lọc theo nhóm"></div>
+    <div id="groups"></div>
+    <p class="empty" id="empty" hidden>Không có cú máy nào khớp từ khoá.</p>
+  </div>
+</section>
+</main>
+
+<section class="cta" id="cta">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Lớp học video AI</div>
+      <h2>Tham gia học tập cùng thầy Huy để tạo ra <em>video ấn tượng</em></h2>
+      <p>Học cách viết prompt, dựng talking head, phối hiệu ứng và giọng đọc để video AI vừa chuyên nghiệp vừa đúng chính tả tiếng Việt.</p>
+    </div>
+  </div>
+</section>
+<footer><div class="wrap">
+  <span>© 2026 PGS.TS. Lê Thanh Huy · ĐT: 0983 027 581</span>
+  <span>Danh mục cú máy zoom được tổng hợp và biên soạn lại.</span>
+</div></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const GROUPS=[
+ {id:'g1',name:'Vũ trụ',en:'Cosmos',items:'earth|Trái Đất;space|không gian vũ trụ;moon|Mặt Trăng;orbit|quỹ đạo;galaxy|thiên hà;nebula|tinh vân;stars|bầu trời sao;satellite|vệ tinh'},
+ {id:'g2',name:'Bầu trời & trên cao',en:'Aerial',items:'clouds|tầng mây;sky|bầu trời;atmosphere|tầng khí quyển;horizon|đường chân trời;aerial view|góc nhìn trên không;bird\'s eye view|góc chiếu thẳng xuống;drone view|góc drone;airplane|máy bay'},
+ {id:'g3',name:'Biển & nước',en:'Water',items:'ocean|đại dương;underwater|dưới nước;beach|bãi biển;island|hòn đảo;waterfall|thác nước;river|dòng sông;lake|mặt hồ;ship|con tàu'},
+ {id:'g4',name:'Thiên nhiên',en:'Nature',items:'mountain|đỉnh núi;forest|khu rừng;desert|sa mạc;canyon|hẻm núi;valley|thung lũng;countryside|vùng quê;volcano|núi lửa;landscape|toàn cảnh thiên nhiên'},
+ {id:'g5',name:'Đô thị',en:'Urban',items:'city|toàn cảnh thành phố;skyline|đường chân trời đô thị;skyscraper|toà cao ốc;building exterior|mặt ngoài toà nhà;rooftop|sân thượng;street|đường phố;intersection|ngã tư;neighborhood|khu dân cư'},
+ {id:'g6',name:'Trong nhà',en:'Indoor',items:'window|ngoài cửa sổ;room|toàn cảnh căn phòng;doorway|khung cửa;corridor|cuối hành lang;elevator|thang máy;staircase|cầu thang;office|văn phòng;living room|phòng khách'},
+ {id:'g7',name:'Đám đông & sự kiện',en:'Crowd',items:'crowd|đám đông;stadium|sân vận động;concert|buổi hoà nhạc;market|khu chợ;festival|lễ hội;subway|ga tàu điện;airport|sân bay;parking lot|bãi đỗ xe'}
+];
+let n=0;const ALL=[];
+GROUPS.forEach(g=>{g.list=g.items.split(';').map(s=>{const[src,vi]=s.split('|');const o={n:++n,src,vi,g:g.id};ALL.push(o);return o})});
+
+const FX=[
+ {k:'trans',t:'Chuyển cảnh mượt'},
+ {k:'holo',t:'Hologram UI'},
+ {k:'icon',t:'Icon / 3D Asset'},
+ {k:'vfx',t:'VFX'},
+ {k:'sfx',t:'SFX sinh động'},
+ {k:'music',t:'Nhạc nền nhẹ'}
+];
+const SAMPLE={
+ txt:'THẦY CÔ MUỐN SOẠN BÀI NHANH HƠN, THIẾT KẾ BÀI GIẢNG HAY HƠN KHÔNG? THIẾT KẾ HỌC LIỆU SỐ ĐA DẠNG HƠN? HÃY CÙNG THẦY HUY CHINH PHỤC AI! THAM GIA NHÓM ZALO ĐỂ “BẮT ĐẦU”, THẦY CÔ NHÉ!',
+ kw:'SOẠN BÀI NHANH → tia sét và đồng hồ 3D\nBÀI GIẢNG HAY → bảng trình chiếu và bóng đèn ý tưởng 3D\nHỌC LIỆU SỐ → laptop, máy tính bảng và sách số 3D\nCHINH PHỤC AI → robot AI, chip AI phát sáng, lá cờ chiến thắng 3D\nNHÓM ZALO → biểu tượng nhóm chat, điện thoại có bong bóng tin nhắn 3D\nBẮT ĐẦU → nút Play và tên lửa phóng lên 3D',
+ lang:'vi',gender:'nam',region:'Miền Nam (chung)',tone:'nhẹ nhàng, ấm áp',style:'hot',cta:''
+};
+const LANGS=[['vi','tiếng Việt'],['en-US','tiếng Anh (giọng Mỹ)'],['en-GB','tiếng Anh (giọng Anh)'],['en-AU','tiếng Anh (giọng Úc)'],['zh','tiếng Trung (phổ thông)'],['yue','tiếng Quảng Đông'],['ja','tiếng Nhật'],['ko','tiếng Hàn'],['fr','tiếng Pháp'],['de','tiếng Đức'],['es','tiếng Tây Ban Nha'],['ru','tiếng Nga'],['th','tiếng Thái'],['lo','tiếng Lào'],['km','tiếng Khmer'],['id','tiếng Indonesia'],['hi','tiếng Hindi'],['ar','tiếng Ả Rập']];
+const REGIONS={
+ 'Theo miền':['Giọng phổ thông (không theo vùng)','Miền Bắc (chung)','Miền Trung (chung)','Miền Nam (chung)'],
+ 'Miền Bắc':['Hà Nội','Hải Phòng','Quảng Ninh','Bắc Ninh','Hải Dương','Hưng Yên','Thái Bình','Nam Định','Ninh Bình','Phú Thọ','Thái Nguyên','Lạng Sơn','Lào Cai','Sơn La'],
+ 'Bắc Trung Bộ':['Thanh Hoá','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế'],
+ 'Nam Trung Bộ':['Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hoà','Ninh Thuận','Bình Thuận'],
+ 'Tây Nguyên':['Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng'],
+ 'Miền Nam':['TP. Hồ Chí Minh (Sài Gòn)','Đồng Nai','Bình Dương','Bà Rịa – Vũng Tàu','Tây Ninh','Long An','Tiền Giang','Bến Tre','Vĩnh Long','Trà Vinh','Đồng Tháp','An Giang','Kiên Giang','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau']
+};
+const DEF={
+ txt:'', kw:'', style:'hot', lang:'vi', gender:'nam', region:'Đà Nẵng', tone:'nhẹ nhàng, ấm áp',
+ subj:'a male teacher', scene:'', ratio:'', pos:'open',
+ cta:'',
+ mode:'zoom', sel:13, fx:FX.map(f=>f.k), tab:'all'
+};
+const $=s=>document.querySelector(s);
+$('#lang').innerHTML=LANGS.map(([v,t])=>`<option value="${v}">${t.replace('tiếng ','Tiếng ')}</option>`).join('');
+$('#region').innerHTML=Object.entries(REGIONS).map(([g,l])=>`<optgroup label="${g}">${l.map(p=>`<option>${p}</option>`).join('')}</optgroup>`).join('');
+let S=Object.assign({},DEF);
+try{const s=JSON.parse(localStorage.getItem('bdp-huy-v3')||'null');if(s)S=Object.assign(S,s)}catch(e){}
+const save=()=>{try{localStorage.setItem('bdp-huy-v3',JSON.stringify(S))}catch(e){}};
+const langName=()=>(LANGS.find(l=>l[0]===S.lang)||LANGS[0])[1];
+function voiceText(){
+ let v='giọng '+S.gender;
+ if(S.lang==='vi'){v+=S.region.startsWith('Giọng phổ thông')?' tiếng Việt chuẩn phổ thông'
+   :S.region.endsWith('(chung)')?' '+S.region.replace(' (chung)','').replace('Miền','miền')+' Việt Nam'
+   :' tiếng Việt vùng '+S.region.replace(' (Sài Gòn)',' – Sài Gòn')}
+ else v+=' '+langName();
+ return v+', '+S.tone;
+}
+
+/* fields */
+const FIELDS=['txt','kw','style','lang','gender','region','tone','subj','scene','ratio','pos','cta'];
+FIELDS.forEach(id=>{const el=$('#'+id);el.value=S[id];
+ el.addEventListener('input',()=>{S[id]=el.value;update()})});
+S.fx=S.fx.filter(k=>FX.some(f=>f.k===k));
+$('#loadSample').onclick=()=>{Object.assign(S,SAMPLE);S.fx=FX.map(f=>f.k);FIELDS.forEach(id=>$('#'+id).value=S[id]);
+ document.querySelectorAll('#fx input').forEach(i=>i.checked=true);update();toast('Đã nạp mẫu. Thầy sửa tiếp trong các ô.')};
+$('#fx').innerHTML=FX.map(f=>`<label><input type="checkbox" id="fx-${f.k}" value="${f.k}"${S.fx.includes(f.k)?' checked':''}>${f.t}</label>`).join('');
+$('#fx').addEventListener('change',()=>{S.fx=[...document.querySelectorAll('#fx input:checked')].map(i=>i.value);update()});
+
+/* mode */
+function setMode(m){S.mode=m;$('#mZoom').setAttribute('aria-pressed',m==='zoom');$('#mBase').setAttribute('aria-pressed',m==='base');
+ $('#lib').classList.toggle('off',m!=='zoom');['subj','pos'].forEach(id=>$('#'+id).disabled=m!=='zoom');update()}
+$('#mZoom').onclick=()=>setMode('zoom');$('#mBase').onclick=()=>setMode('base');
+
+/* library */
+$('#tabs').innerHTML=[{id:'all',name:'Tất cả'}].concat(GROUPS).map(g=>`<button type="button" data-t="${g.id}">${g.name}</button>`).join('');
+$('#groups').innerHTML=GROUPS.map(g=>`<div class="grp" data-g="${g.id}"><h3>${g.en}<span>${g.name}</span></h3><div class="tiles">${
+ g.list.map(o=>`<button type="button" class="tile" data-n="${o.n}" data-q="${(o.src+' '+o.vi).toLowerCase()}"><span class="no">${String(o.n).padStart(2,'0')}</span><b>Từ ${o.vi}</b><code>/From ${o.src}…</code></button>`).join('')}</div></div>`).join('');
+function filter(){const k=$('#q').value.trim().toLowerCase();let any=0;
+ document.querySelectorAll('.grp').forEach(gr=>{let v=0;const tabOk=S.tab==='all'||S.tab===gr.dataset.g;
+  gr.querySelectorAll('.tile').forEach(t=>{const m=tabOk&&(!k||t.dataset.q.includes(k));t.hidden=!m;if(m)v++});gr.hidden=!v;if(v)any++});
+ $('#empty').hidden=!!any;
+ document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===S.tab))}
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.tab=b.dataset.t;save();filter()};
+$('#q').addEventListener('input',filter);
+$('#groups').onclick=e=>{const t=e.target.closest('.tile');if(!t)return;S.sel=+t.dataset.n;if(S.mode!=='zoom')setMode('zoom');else update();
+ if(innerWidth<=940)document.querySelector('.mon').scrollIntoView({behavior:'smooth',block:'start'})};
+$('#rand').onclick=()=>{const vis=[...document.querySelectorAll('.tile:not([hidden])')];const pool=vis.length?vis:[...document.querySelectorAll('.tile')];
+ S.sel=+pool[Math.floor(Math.random()*pool.length)].dataset.n;update();toast('Đã chọn cú máy ngẫu nhiên')};
+
+/* build prompt */
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function zoomCode(){const o=ALL[S.sel-1];if(!o)return'';const s=S.subj.trim()||'subject';
+ return S.pos==='end'?`/From ${s} to ${o.src} zoom out`:`/From ${o.src} to ${s} zoom`}
+function parseKW(){
+ return S.kw.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+  const m=l.split(/\s*(?:→|->|=>|\||:|=)\s*/);const k=m.shift().replace(/^[-•*\d.\s]+/,'').replace(/^["“]|["”]$/g,'');
+  return{k,i:m.join(', ').trim()}}).filter(x=>x.k);
+}
+function build(){
+ const o=ALL[S.sel-1], zoom=S.mode==='zoom'&&o, has=k=>S.fx.includes(k);
+ const P=[],H=[];let code='';
+ const line=(t,cls)=>{P.push(t);H.push(cls==='code'?`<mark>${esc(t)}</mark>`:cls==='h'?`<b class="hd">${esc(t)}</b>`:esc(t))};
+ const quote=t=>{P.push(`"${t}"`);H.push(`<q>“${esc(t)}”</q>`)};
+ const gap=()=>{P.push('');H.push('')};
+ const vi=S.lang==='vi', L=langName(), kws=parseKW();
+
+ if(zoom){code=zoomCode();line(code,'code')}
+ let a='Tạo video chuyên nghiệp dạng talking head, giữ nguyên nhân vật và bối cảnh';
+ if(S.scene.trim())a+=` (${S.scene.trim()})`;
+ a+='.';if(S.ratio)a+=` Khung hình ${S.ratio}.`;
+ line(a);
+ if(zoom)line(S.pos==='open'?`Mở đầu bằng cú máy siêu zoom liền mạch từ ${o.vi} lao thẳng vào nhân vật, rồi dừng ở khung hình talking head.`
+   :S.pos==='mid'?`Ở đoạn chuyển ý giữa video, dùng cú siêu zoom từ ${o.vi} vào nhân vật làm hiệu ứng chuyển cảnh.`
+   :`Kết video bằng cú zoom ngược: máy kéo từ nhân vật ra xa dần đến toàn cảnh ${o.vi}.`);
+
+ gap();line('GIỌNG ĐỌC: '+voiceText()+', nói rõ ràng, truyền cảm.','h');
+
+ if(S.txt.trim()){gap();line(`LỜI THOẠI (đọc đúng nguyên văn, đúng chính tả ${L}):`,'h');quote(S.txt.trim())}
+
+ gap();line('CHỮ TRÊN VIDEO:','h');
+ if(S.style==='none')line('- Không hiện chữ trên video, chỉ dùng hình ảnh và icon minh hoạ.');
+ else{
+  if(S.style==='hot'){
+   line('- Chỉ hiện các TỪ KHÓA HOT, khớp đúng thời điểm giọng nói nhắc đến. Không hiện toàn bộ câu, không chạy chữ kiểu karaoke.');
+   if(!kws.length)line('- Tự chọn 4–6 từ khóa quan trọng, hút mắt nhất trong lời thoại; không cần hiện đầy đủ, chỉ điểm qua.');
+   line('- Từ khóa in hoa, phóng to, bật lên rồi biến mất gọn gàng, đổi màu nổi bật (đỏ, vàng neon, xanh lá).');
+  }else{
+   line('- Chữ hiện từng từ/cụm từ bám sát giọng đọc.');
+   line('- Từ khóa quan trọng được phóng to, đổi màu nổi bật (đỏ, vàng neon, xanh lá) hoặc in hoa để hút mắt người xem.');
+  }
+  line(`- Viết đúng chính tả ${L}${vi?', có đủ dấu':''}.`);
+ }
+
+ if(kws.length){gap();line(S.style==='none'?'NỘI DUNG VÀ BIỂU TƯỢNG 3D ĐI KÈM:':'TỪ KHÓA VÀ BIỂU TƯỢNG 3D ĐI KÈM:','h');
+  kws.forEach(x=>line(`- "${x.k}" → ${x.i||'biểu tượng 3D phù hợp với nội dung'}`))}
+
+ const fxL=[];
+ if(has('holo')||has('icon'))fxL.push('- '+[has('holo')&&'Hologram UI',has('icon')&&'icon/3D asset'].filter(Boolean).join(' và ')+' bật lên theo lời thoại'+(has('icon')&&!kws.length?', mỗi từ khóa kèm một biểu tượng 3D tương ứng':'')+', đặt hai bên nhân vật, không che mặt.');
+ if(has('vfx'))fxL.push('- Hiệu ứng hình ảnh (VFX) nhẹ: ánh sáng lấp lánh, hạt sáng, viền phát sáng quanh từ khóa.');
+ if(has('trans'))fxL.push('- Chuyển cảnh mượt mà giữa các ý.');
+ if(fxL.length){gap();line('HIỆU ỨNG HÌNH ẢNH:','h');fxL.forEach(t=>line(t))}
+
+ const sL=[];
+ if(has('sfx'))sL.push('- Sound Effects (SFX) sinh động, khớp với từng từ khóa và icon: tiếng "whoosh" khi chuyển cảnh, "pop" khi từ khóa bật lên, "ding" khi icon xuất hiện.');
+ if(has('music'))sL.push('- Nhạc nền nhẹ, tích cực, không lấn át giọng nói.');
+ if(sL.length){gap();line('ÂM THANH:','h');sL.forEach(t=>line(t))}
+
+ if(S.cta.trim()){gap();line('KẾT VIDEO: hiện lời kêu gọi nổi bật trên màn hình:','h');quote(S.cta.trim())}
+ return{plain:P.join('\n'),html:H.join('\n'),code};
+}
+function update(){
+ $('#regionF').hidden=S.lang!=='vi';
+ $('#voiceSum').textContent='Giọng sẽ ghi vào prompt: '+voiceText();
+ const {plain,html,code}=build();
+ $('#out').innerHTML=html;
+ $('#out').dataset.plain=plain;
+ const o=ALL[S.sel-1];
+ $('#shotVal').textContent=S.mode==='zoom'&&o?`${String(o.n).padStart(2,'0')} · Từ ${o.vi}`:'Không dùng (prompt gốc)';
+ $('#pill').textContent=S.mode==='zoom'?'Zoom + Prompt':'Prompt gốc';
+ $('#copyCode').disabled=!(S.mode==='zoom'&&code);
+ $('#count').textContent=plain.length.toLocaleString('vi-VN')+' ký tự';
+ const w=S.txt.trim()?S.txt.trim().split(/\s+/).length:0;
+ $('#words').textContent=w?w+' từ lời thoại · ~'+Math.max(1,Math.round(w/2.6))+' giây':'Chưa gõ chữ trên video';
+ document.querySelectorAll('.tile').forEach(t=>t.setAttribute('aria-pressed',+t.dataset.n===S.sel));
+ save();
+}
+
+/* copy */
+function copy(text,btn,msg){
+ const done=()=>{toast(msg);if(btn){const o=btn.textContent;btn.textContent='✓ Đã chép';btn.classList.add('ok');setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok')},1300)}};
+ const fb=()=>{const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,999999);let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();
+  if(ok)done();else toast('Trình duyệt chặn copy. Hãy bôi đen phần prompt và chép thủ công.')};
+ try{navigator.clipboard.writeText(text).then(done,fb)}catch(e){fb()}
+}
+$('#copyAll').onclick=e=>document.body.classList.contains('locked')?toast('Vui lòng đăng nhập để copy prompt.'):copy($('#out').dataset.plain,e.currentTarget,'Đã copy prompt. Dán vào ô prompt của Google Flow.');
+$('#copyCode').onclick=e=>document.body.classList.contains('locked')?null:copy(zoomCode(),e.currentTarget,'Đã copy code: '+zoomCode());
+if($('#copyTel'))$('#copyTel').onclick=e=>copy('0983027581',e.currentTarget,'Đã copy số điện thoại 0983027581');
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2000)}
+
+setMode(S.mode);filter();
+
+/* student login (client-side gate) */
+const PASS_HASH='ca479750';
+const fnv=t=>{let x=0x811c9dc5;for(const c of t){x^=c.codePointAt(0);x=Math.imul(x,0x01000193)>>>0}return x.toString(16)};
+const wsParts=()=>[$('.form'),$('.lib'),$('.mon')];
+function setLocked(on){document.body.classList.toggle('locked',on);
+ wsParts().forEach(el=>{if(on)el.setAttribute('inert','');else el.removeAttribute('inert')});
+ $('#stTxt').textContent=on?'Chưa đăng nhập':'Học viên đã đăng nhập'}
+let authed=false;try{authed=localStorage.getItem('bdp-huy-auth')===PASS_HASH}catch(e){}
+setLocked(!authed);
+$('#loginForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#pw').value.trim();
+ if(fnv(v.toUpperCase())===PASS_HASH){try{localStorage.setItem('bdp-huy-auth',PASS_HASH)}catch(e){}$('#err').textContent='';$('#pw').value='';setLocked(false);toast('Đăng nhập thành công. Chức năng đã mở khoá.')}
+ else{$('#err').textContent=v?'Mật khẩu chưa đúng. Vui lòng kiểm tra lại với giảng viên.':'Vui lòng nhập mật khẩu.';$('#pw').focus()}});
+$('#eye').onclick=()=>{const p=$('#pw');p.type=p.type==='password'?'text':'password';$('#eye').textContent=p.type==='password'?'Hiện':'Ẩn'};
+$('#logout').onclick=()=>{try{localStorage.removeItem('bdp-huy-auth')}catch(e){}setLocked(true);scrollTo({top:0,behavior:'smooth'});toast('Đã đăng xuất')};
+$('#goLogin').onclick=()=>{scrollTo({top:0,behavior:'smooth'});setTimeout(()=>$('#pw').focus(),350)};
+</script>
+
+</body>
+</html>

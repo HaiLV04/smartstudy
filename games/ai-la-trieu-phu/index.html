@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ai Là Triệu Phú — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .tp-layout { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+  .tp-ladder {
+    width: 210px; flex-shrink: 0; display: flex; flex-direction: column-reverse; gap: 5px;
+    background: linear-gradient(180deg, #0f172a, #1e1b4b);
+    border-radius: var(--radius-lg); padding: 14px; box-shadow: var(--shadow-md);
+  }
+  .tp-rung {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem;
+    color: rgba(255,255,255,0.55);
+  }
+  .tp-rung .num { opacity: 0.7; }
+  .tp-rung.done { color: #fde68a; }
+  .tp-rung.current {
+    background: linear-gradient(135deg, #facc15, #f59e0b);
+    color: #1e1b4b; box-shadow: 0 0 16px rgba(250,204,21,0.6);
+    animation: tpGlow 1.4s infinite ease-in-out;
+  }
+  @keyframes tpGlow { 0%,100% { box-shadow: 0 0 10px rgba(250,204,21,0.4); } 50% { box-shadow: 0 0 22px rgba(250,204,21,0.85); } }
+  .tp-main { flex: 1; min-width: 280px; }
+  .lifeline-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .lifeline-btn {
+    background: var(--surface); border: 2px solid var(--ink-100); border-radius: 999px;
+    padding: 10px 16px; font-weight: 700; font-size: 0.85rem; color: var(--ink-700);
+    display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s ease;
+  }
+  .lifeline-btn:hover:not(:disabled) { border-color: var(--brand-3); color: var(--brand-3); transform: translateY(-2px); }
+  .lifeline-btn:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+  .tp-hint-box {
+    max-width: 640px; margin: 0 auto 18px; background: #fff7ed; border: 1px solid #fed7aa;
+    color: #9a3412; border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.9rem; font-weight: 600;
+  }
+  .tp-audience { max-width: 480px; margin: 0 auto 18px; }
+  .tp-audience-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .tp-audience-row .key { width: 22px; font-weight: 800; color: var(--ink-700); flex-shrink: 0; }
+  .tp-audience-bar-track { flex: 1; background: var(--ink-100); border-radius: 999px; height: 20px; overflow: hidden; }
+  .tp-audience-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand-2), var(--brand-1)); width: 0%; transition: width 1s ease; border-radius: 999px; }
+  .tp-audience-row .pct { width: 42px; text-align: right; font-weight: 700; font-size: 0.82rem; color: var(--ink-700); }
+  .tp-opt.eliminated { opacity: 0.25; pointer-events: none; }
+  @media (max-width: 720px) { .tp-ladder { flex-direction: column; width: 100%; } }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">💎 Ai Là Triệu Phú</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn câu hỏi</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Một học sinh (hoặc cả lớp cùng thống nhất) trả lời từng câu để leo lên các nấc thang điểm. Có 3 quyền trợ giúp, mỗi loại dùng được 1 lần: 50:50, Gọi điện thoại, Hỏi ý kiến lớp. Trả lời sai sẽ dừng cuộc chơi tại mốc điểm đã đạt gần nhất.</div>
+
+      <div class="tp-layout">
+        <div class="tp-ladder" id="ladderEl"></div>
+        <div class="tp-main">
+          <div class="game-panel">
+            <div class="lifeline-row">
+              <button class="lifeline-btn" id="btn5050">🎯 50:50</button>
+              <button class="lifeline-btn" id="btnPhone">📞 Gọi điện thoại</button>
+              <button class="lifeline-btn" id="btnAudience">🙋 Hỏi ý kiến lớp</button>
+            </div>
+            <div id="questionArea"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Bộ câu hỏi trắc nghiệm (nên có ít nhất 10 câu, dễ → khó)</label>
+        <textarea id="quizInput" rows="12"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3</b>. Nếu có ít hơn 10 câu, trò chơi sẽ lặp lại một số câu để đủ 10 nấc thang.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

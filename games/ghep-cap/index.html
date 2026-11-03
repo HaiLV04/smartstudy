@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghép Cặp Trí Nhớ — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 640px) { .memory-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } }
+  .mem-card {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .mem-card-inner {
+    position: relative; width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.4,.2,.2,1);
+  }
+  .mem-card.flipped .mem-card-inner,
+  .mem-card.matched .mem-card-inner { transform: rotateY(180deg); }
+  .mem-face {
+    position: absolute; inset: 0; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 8px; backface-visibility: hidden; box-shadow: var(--shadow-sm);
+    font-weight: 700; font-size: .82rem; line-height: 1.35; word-break: break-word;
+  }
+  .mem-face.back-of-card {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    color: #fff; font-size: 1.6rem;
+  }
+  .mem-face.front-of-card {
+    background: #fff; border: 2px solid var(--brand-3); color: var(--ink-900);
+    transform: rotateY(180deg);
+  }
+  .mem-card.matched .mem-face.front-of-card {
+    border-color: var(--success); background: #f0fdf4; color: #166534;
+  }
+  .mem-card.matched { cursor: default; }
+  .mem-card.wrong-shake .mem-card-inner { animation: memshake .4s; }
+  @keyframes memshake { 0%,100%{transform:rotateY(180deg) translateX(0);} 25%{transform:rotateY(180deg) translateX(-6px);} 75%{transform:rotateY(180deg) translateX(6px);} }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🧠 Ghép Cặp Trí Nhớ</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn cặp thẻ</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Bấm để lật mở 1 thẻ, rồi lật thẻ thứ 2 — nếu 2 thẻ tạo thành 1 cặp đúng, chúng sẽ giữ nguyên mặt phải. Nếu sai, cả 2 sẽ úp lại sau chốc lát. Hãy nhớ vị trí để ghép hết các cặp với ít lượt nhất!</div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Đã ghép: <span id="matchedCount">0</span>/<span id="totalPairs">0</span></div>
+        <div class="score-chip"><span class="dot" style="background:var(--brand-3);"></span> Lượt lật: <span id="attemptCount">0</span></div>
+      </div>
+
+      <div class="game-panel">
+        <div class="memory-grid" id="memoryGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn cặp thẻ ghi nhớ</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách cặp thẻ</label>
+        <textarea id="pairsInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 cặp, theo mẫu: <b>Vế trái | Vế phải</b>. Ví dụ: <i>Thủ đô Việt Nam | Hà Nội</i>. Nên dùng 6–10 cặp, nội dung ngắn gọn để vừa thẻ. Tổng số thẻ = số cặp × 2.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

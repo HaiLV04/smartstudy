@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kéo Thả Nối Ý — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧩</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .board-cols { display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .concept-col-label { font-weight: 700; font-size: .85rem; color: var(--ink-500); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .concept-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+  .concept-box {
+    display: flex; align-items: stretch; gap: 12px;
+    background: var(--surface-soft); border: 1px solid var(--ink-100);
+    border-radius: var(--radius-md); padding: 12px 14px;
+  }
+  .concept-box .c-icon {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--brand-2), #1e40af); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  .concept-box .c-label { flex: 0 0 auto; width: 34%; min-width: 130px; font-weight: 800; font-size: .92rem; display: flex; align-items: center; color: var(--ink-900); }
+  .concept-box .c-drop {
+    flex: 1; border-radius: 8px; border: 2px dashed var(--ink-300); background: #fff;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-size: .85rem; font-weight: 600; color: var(--ink-500); padding: 8px 10px; min-height: 44px;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .concept-box .c-drop.hover-target { border-color: var(--brand-2); background: #eef4ff; }
+  .concept-box .c-drop.matched { border: 2px solid var(--success); background: #f0fdf4; color: #166534; font-weight: 700; }
+  .concept-box.matched { border-color: var(--success); background: #f6fffa; }
+
+  .chip-pool-label { font-weight: 700; font-size: .85rem; color: var(--ink-500); margin-bottom: 10px; }
+  .chip-pool { display: flex; flex-wrap: wrap; gap: 10px; padding: 18px; background: var(--surface-soft); border-radius: var(--radius-md); border: 1px solid var(--ink-100); min-height: 76px; }
+  .idea-chip {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff;
+    border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: .88rem;
+    cursor: grab; touch-action: none; user-select: none; box-shadow: var(--shadow-sm);
+    position: relative; max-width: 320px;
+  }
+  .idea-chip:active { cursor: grabbing; }
+  .idea-chip.dragging { position: fixed; z-index: 500; pointer-events: none; opacity: .92; box-shadow: var(--shadow-lg); border-radius: 14px; }
+  .idea-chip.wrong-shake { animation: chipshake .4s; border: 2px solid var(--danger); }
+  @keyframes chipshake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🧩 Kéo Thả Nối Ý</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn cặp khái niệm</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 Chơi lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Kéo thẻ ý nghĩa (màu tím) bên dưới vào đúng ô trống của khái niệm tương ứng ở bảng trên để hoàn thành bài ghép ý.</div>
+
+      <div class="scoreboard">
+        <div class="score-chip"><span class="dot" style="background:var(--brand-1);"></span> Đã nối đúng: <span id="matchedCount">0</span>/<span id="totalCount">0</span></div>
+      </div>
+
+      <div class="game-panel">
+        <div class="board-cols">
+          <div>
+            <div class="concept-col-label">🧩 Khái niệm</div>
+            <div class="concept-list" id="conceptList"></div>
+          </div>
+          <div>
+            <div class="chip-pool-label">🎯 Kéo các thẻ ý nghĩa bên dưới lên trên</div>
+            <div class="chip-pool" id="chipPool"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn cặp khái niệm - ý nghĩa</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">Danh sách cặp khái niệm - ý nghĩa</label>
+        <textarea id="pairsInput" rows="10"></textarea>
+        <p class="field-hint">Mỗi dòng 1 cặp, theo mẫu: <b>Khái niệm | Định nghĩa/Ý nghĩa</b>. Nên dùng 5–8 cặp.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

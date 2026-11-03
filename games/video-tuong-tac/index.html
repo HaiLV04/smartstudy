@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Tương Tác — StudyAI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<style>
+  .yt-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #0f172a; border-radius: var(--radius-md); overflow: hidden; }
+  .yt-wrap iframe, .yt-wrap #ytPlayer { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-overlay {
+    position: absolute; inset: 0;
+    background: rgba(15, 23, 42, 0.92);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; z-index: 5;
+  }
+  .video-overlay.hidden { display: none; }
+  .video-overlay .question-box { max-width: 100%; }
+  .video-overlay .question-text { color: #fff; }
+  .video-overlay .answer-btn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25); color: #fff; }
+  .video-overlay .answer-btn .opt-key { background: rgba(255,255,255,0.15); color: #fff; }
+  .video-overlay .answer-btn:hover:not(:disabled) { border-color: var(--brand-4); }
+  .video-overlay .answer-btn.correct { background: rgba(34,197,94,0.25); border-color: var(--success); }
+  .video-overlay .answer-btn.wrong { background: rgba(239,68,68,0.25); border-color: var(--danger); }
+  .video-timer-chip { position: absolute; top: 10px; left: 10px; z-index: 4; background: rgba(15,23,42,0.7); color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+  .video-timer-chip.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="game-shell">
+  <div class="game-topbar">
+    <div class="container">
+      <a href="../../index.html" class="back-link">← Trang chủ</a>
+      <span class="game-title">🎬 Video Tương Tác</span>
+      <div class="topbar-tools">
+        <button class="btn btn-ghost" id="openSettingsBtn">⚙️ Soạn video &amp; câu hỏi</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-stage">
+    <div class="container">
+      <div class="side-note">💡 Dán ID video YouTube và soạn các câu hỏi theo mốc thời gian trong phần cài đặt. Video sẽ tự dừng lại đúng thời điểm để cả lớp cùng trả lời, rồi tiếp tục phát.</div>
+
+      <div class="scoreboard" id="scoreRow" style="display:none;">
+        <div class="score-chip"><span class="dot" style="background:var(--success);"></span> Đã trả lời đúng: <span id="progressText">0/0</span></div>
+      </div>
+
+      <div class="game-panel">
+        <div id="placeholderState" class="empty-state">
+          <div class="emoji">🎬</div>
+          <p>Chưa có video nào được cấu hình.<br>Bấm "⚙️ Soạn video &amp; câu hỏi" để dán ID video YouTube và tạo câu hỏi tương tác.</p>
+          <button class="btn btn-primary" id="openSettingsFromEmptyBtn" style="margin-top:14px;">⚙️ Soạn video ngay</button>
+        </div>
+        <div id="playerArea" class="hidden">
+          <div class="yt-wrap" id="ytWrap">
+            <div class="video-timer-chip hidden" id="timerChip"></div>
+            <div id="ytPlayer"></div>
+            <div class="video-overlay hidden" id="videoOverlay"></div>
+          </div>
+        </div>
+        <div id="errorState" class="empty-state hidden">
+          <div class="emoji">⚠️</div>
+          <p id="errorText">Không thể tải trình phát video.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Soạn video &amp; câu hỏi</h3>
+      <button class="modal-close" onclick="SA.closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="field-label">ID video YouTube</label>
+        <input type="text" id="videoIdInput" placeholder="VD: dQw4w9WgXcQ">
+        <p class="field-hint">Lấy ID từ đường link YouTube: với link <b>https://www.youtube.com/watch?v=dQw4w9WgXcQ</b>, ID chính là phần sau "v=", tức <b>dQw4w9WgXcQ</b>. Có thể dán cả đường link đầy đủ, hệ thống sẽ tự nhận diện ID. Để trống nếu chưa có video.</p>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Câu hỏi theo mốc thời gian</label>
+        <textarea id="timedQInput" rows="8"></textarea>
+        <p class="field-hint">Mỗi dòng 1 câu, theo mẫu: <b>Giây | Câu hỏi | Đáp án đúng | Sai 1 | Sai 2</b><br>
+        VD: <i>15 | 2 + 2 bằng mấy? | 4 | 3 | 5</i> — nghĩa là tại giây thứ 15, video sẽ dừng lại và hiện câu hỏi này.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SA.closeModal('settingsModal')">Huỷ</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">💾 Lưu lại</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
